@@ -19,7 +19,7 @@ from apk_extractor import extract_features
 app = Flask(__name__)
 
 # ── Config ───────────────────────────────────────
-MAX_APK_SIZE_MB = 50
+MAX_APK_SIZE_MB = 110
 UPLOAD_FOLDER   = tempfile.gettempdir()
 BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
 
