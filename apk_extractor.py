@@ -1,11 +1,3 @@
-"""
-=================================================
-  apk_extractor.py
-  Extracts features from a real .apk file
-  using androguard — matches TUANDROMD features
-=================================================
-"""
-
 import os
 import re
 import hashlib
@@ -13,18 +5,18 @@ from pathlib import Path
 
 
 def extract_features(apk_path: str, top_features: list) -> dict:
-    """
-    Extract features from an APK file.
-    Maps extracted data → same feature names used in TUANDROMD training.
+    # """
+    # Extract features from an APK file.
+    # Maps extracted data → same feature names used in TUANDROMD training.
 
-    Args:
-        apk_path:     Path to the .apk file
-        top_features: List of feature names the model expects (from top_features.pkl)
+    # Args:
+    #     apk_path:     Path to the .apk file
+    #     top_features: List of feature names the model expects (from top_features.pkl)
 
-    Returns:
-        dict  { feature_name: 0 or 1 }
-        meta  { apk_name, package_name, permissions, ... }
-    """
+    # Returns:
+    #     dict  { feature_name: 0 or 1 }
+    #     meta  { apk_name, package_name, permissions, ... }
+    # """
     try:
         from androguard.misc import AnalyzeAPK
     except ImportError:
@@ -33,11 +25,9 @@ def extract_features(apk_path: str, top_features: list) -> dict:
             "Run: pip install androguard"
         )
 
-    # ── Parse APK ───────────────────────────────────
     a, d, dx = AnalyzeAPK(apk_path)
 
-    # ── Raw extractions ─────────────────────────────
-    permissions   = set(a.get_permissions())           # e.g. {'android.permission.READ_SMS', ...}
+    permissions   = set(a.get_permissions())           
     activities    = a.get_activities()
     services      = a.get_services()
     receivers     = a.get_receivers()
@@ -51,10 +41,9 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     short_perms = set()
     for p in permissions:
         parts = p.split('.')
-        short_perms.add(parts[-1].upper())   # e.g. READ_SMS
-        short_perms.add(p.upper())           # e.g. ANDROID.PERMISSION.READ_SMS
+        short_perms.add(parts[-1].upper())
+        short_perms.add(p.upper())           
 
-    # ── API calls from DEX ───────────────────────────
     api_calls = set()
     try:
         for method in dx.get_methods():
@@ -65,16 +54,12 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     except Exception:
         pass
 
-    # ── Build feature vector ─────────────────────────
-    # TUANDROMD features are binary: permission present (1) or absent (0)
-    # Feature names are typically the bare permission name (e.g. READ_SMS)
 
     feature_vector = {}
 
     for feat in top_features:
         feat_upper = feat.upper()
 
-        # Check permission match
         matched = (
             feat_upper in short_perms
             or any(feat_upper in p for p in short_perms)
@@ -82,7 +67,6 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         )
         feature_vector[feat] = 1 if matched else 0
 
-    # ── Metadata for display ─────────────────────────
     meta = {
         "apk_name":    os.path.basename(apk_path),
         "package_name": package_name,
@@ -142,4 +126,4 @@ def _get_risk_signals(permissions: set, api_calls: set) -> list:
         if any(api.lower() in call.lower() for call in api_calls):
             signals.append({'type': 'api_call', 'name': api, 'severity': 'medium'})
 
-    return signals[:10]  # return top 10 signals max
+    return signals[:10]  
