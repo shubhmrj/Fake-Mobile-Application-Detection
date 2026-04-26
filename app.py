@@ -1,10 +1,3 @@
-"""
-=================================================
-  Fake Banking APK Detection — Flask Backend
-  app.py  (APK Upload Version)
-=================================================
-"""
-
 from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
@@ -18,12 +11,10 @@ from apk_extractor import extract_features
 
 app = Flask(__name__)
 
-# ── Config ───────────────────────────────────────
-MAX_APK_SIZE_MB = 110
+app.config["MAX_CONTENT_LENGTH"] = None
 UPLOAD_FOLDER   = tempfile.gettempdir()
 BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
 
-# ── Load model files once at startup ─────────────
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
 SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
@@ -40,11 +31,6 @@ try:
 except Exception as e:
     print(f"⚠️  Model load failed: {e}")
     model = top_features = scaler = label_encoder = None
-
-
-# ════════════════════════════════════════════════
-#  ROUTES
-# ════════════════════════════════════════════════
 
 @app.route('/')
 def index():
@@ -73,13 +59,6 @@ def scan_apk():
 
     try:
         file.save(tmp_path)
-        size_mb = os.path.getsize(tmp_path) / (1024 * 1024)
-
-        if size_mb > MAX_APK_SIZE_MB:
-            return jsonify({'success': False,
-                            'error': f'APK too large ({size_mb:.1f} MB). Max {MAX_APK_SIZE_MB} MB.'}), 400
-
-        # ── Extract features from APK ─────────────
         try:
             feature_vector, meta = extract_features(tmp_path, top_features)
         except ImportError as ie:
@@ -88,19 +67,16 @@ def scan_apk():
             return jsonify({'success': False,
                             'error': f'Could not parse APK: {str(pe)}'}), 422
 
-        # ── Build feature row ─────────────────────
         row = pd.DataFrame([feature_vector])
         for feat in top_features:
             if feat not in row.columns:
                 row[feat] = 0
         row = row[top_features]
 
-        # ── Predict ───────────────────────────────
         pred       = int(model.predict(row)[0])
         prob       = model.predict_proba(row)[0]
         confidence = float(prob[1])
 
-        # ── SHAP ──────────────────────────────────
         top_reasons = []
         try:
             from xgboost import XGBClassifier
@@ -118,7 +94,6 @@ def scan_apk():
         except Exception:
             pass
 
-        # ── Risk level ────────────────────────────
         if confidence >= 0.85:
             risk_level, risk_color = 'CRITICAL', '#ff2d55'
         elif confidence >= 0.60:
@@ -159,13 +134,7 @@ def get_features():
         return jsonify({'error': 'Model not loaded'}), 500
     return jsonify({'features': top_features, 'count': len(top_features)})
 
-
-# ════════════════════════════════════════════════
-#  RUN
-# ════════════════════════════════════════════════
 if __name__ == '__main__':
-    print("\n" + "=" * 52)
-    print("  🛡️  BankShield — Fake APK Detector")
+    
     print("  Open: http://127.0.0.1:5000")
-    print("=" * 52 + "\n")
     app.run(debug=True, port=5000)
