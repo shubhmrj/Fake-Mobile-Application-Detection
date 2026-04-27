@@ -1,8 +1,21 @@
 from flask import Flask, request, jsonify, render_template
-import subprocess
+import os
 import sys
 
-subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy==1.24.0", "--quiet"])
+# NumPy 1.x vs 2.x Compatibility Hack
+import numpy as np
+print(f"DEBUG: NumPy version: {np.__version__}")
+try:
+    import numpy._core as _core
+except ImportError:
+    # If we are on NumPy 1.x, alias _core to core
+    try:
+        import numpy.core as _core
+        sys.modules['numpy._core'] = _core
+        print("DEBUG: Aliased numpy.core to numpy._core")
+    except ImportError:
+        pass
+
 import joblib
 import pandas as pd
 import numpy as np
