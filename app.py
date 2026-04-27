@@ -46,18 +46,18 @@ def download_models():
     for filename in files:
         dest = os.path.join(models_dir, filename)
         url  = f"{BASE_URL}/{filename}"
-        print(f"⬇️  Downloading {filename} from {url}")
+        print(f"  Downloading {filename} from {url}")
         try:
             r = requests.get(url, headers=headers, timeout=120)
             print(f"   HTTP Status: {r.status_code}")
             if r.status_code == 200:
                 with open(dest, 'wb') as f:
                     f.write(r.content)
-                print(f"✅ {filename} saved — {os.path.getsize(dest)} bytes")
+                print(f" {filename} saved — {os.path.getsize(dest)} bytes")
             else:
-                print(f"❌ Failed {filename}: HTTP {r.status_code} — {r.text[:200]}")
+                print(f" Failed {filename}: HTTP {r.status_code} — {r.text[:200]}")
         except Exception as e:
-            print(f"❌ Exception on {filename}: {e}")
+            print(f" Exception on {filename}: {e}")
 
     print(f"Files in {models_dir} after download: {os.listdir(models_dir)}")
 
@@ -121,8 +121,11 @@ def scan_apk():
         except ImportError as ie:
             return jsonify({'success': False, 'error': str(ie)}), 500
         except Exception as pe:
-            return jsonify({'success': False,
-                            'error': f'Could not parse APK: {str(pe)}'}), 422
+            return jsonify({
+                'success': False,
+                'error': f'Could not parse APK: {str(pe)}',
+                'hint': 'Make sure the file is a valid Android APK'
+            }), 422
 
         row = pd.DataFrame([feature_vector])
         for feat in top_features:
