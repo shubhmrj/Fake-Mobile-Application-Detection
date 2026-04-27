@@ -15,6 +15,7 @@ app.config['MAX_CONTENT_LENGTH'] = None
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
+
 def download_models():
     import requests
 
@@ -27,9 +28,9 @@ def download_models():
     headers = {}
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
-        print("✅ HF Token loaded")
+        print(" HF Token loaded")
     else:
-        print("⚠️  No HF_TOKEN found")
+        print("  No HF_TOKEN found")
 
     BASE_URL = "https://huggingface.co/shubmrj/bankshield-models/resolve/main"
     files    = ["best_model.pkl", "top_features.pkl", "scaler.pkl", "label_encoder.pkl"]
@@ -37,18 +38,22 @@ def download_models():
     for filename in files:
         dest = os.path.join(models_dir, filename)
         url  = f"{BASE_URL}/{filename}"
+        print(f"⬇  Downloading {filename}...")
         try:
             r = requests.get(url, headers=headers, timeout=180)
             print(f"   HTTP {r.status_code}")
             if r.status_code == 200:
                 with open(dest, 'wb') as f:
                     f.write(r.content)
+                print(f" {filename} — {os.path.getsize(dest)} bytes")
             else:
-                print(f"Failed {filename}: {r.status_code} — {r.text[:200]}")
+                print(f" Failed {filename}: {r.status_code} — {r.text[:200]}")
         except Exception as e:
-            print(f"Exception {filename}: {e}")
+            print(f" Exception {filename}: {e}")
 
     print(f"Files in {models_dir}: {os.listdir(models_dir)}")
+
+download_models()
 
 
 MODEL_PATH    = "/app/models/best_model.pkl"
@@ -61,9 +66,15 @@ try:
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    
+    print(f"✅ Model loaded: {type(model).__name__}")
+    print(f"   Features: {len(top_features)}")
+    print(f"   numpy version: {np.__version__}")
 except Exception as e:
+    print(f"❌ Model load failed: {e}")
+    print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
+    print(f"   numpy version: {np.__version__}")
     model = top_features = scaler = label_encoder = None
+
 
 
 @app.route('/')
@@ -172,5 +183,7 @@ def get_features():
     return jsonify({'features': top_features, 'count': len(top_features)})
 
 
+
 if __name__ == '__main__':
+    print("🛡️  BankShield running at http://0.0.0.0:7860")
     app.run(host='0.0.0.0', port=7860, debug=False)

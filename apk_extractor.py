@@ -12,6 +12,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     d    = None
     dx   = None
 
+    # Try full analysis first
     try:
         a, d, dx = AnalyzeAPK(apk_path)
     except Exception as e1:
@@ -22,6 +23,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         except Exception as e2:
             raise Exception(f"Cannot parse APK: {e2}")
 
+    # ── Safe extractions ─────────────────────────
     def safe(fn, default):
         try:
             return fn()
@@ -37,11 +39,13 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     min_sdk      = safe(lambda: a.get_min_sdk_version(), "?")
     target_sdk   = safe(lambda: a.get_target_sdk_version(), "?")
 
+    # Short permission names for matching
     short_perms = set()
     for p in permissions:
         short_perms.add(p.split('.')[-1].upper())
         short_perms.add(p.upper())
 
+    # ── API calls ────────────────────────────────
     api_calls = set()
     if dx is not None:
         try:
@@ -51,6 +55,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         except Exception:
             pass
 
+    # ── Feature vector ───────────────────────────
     feature_vector = {}
     for feat in top_features:
         feat_upper = feat.upper()
@@ -61,6 +66,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         )
         feature_vector[feat] = 1 if matched else 0
 
+    # ── Metadata ─────────────────────────────────
     meta = {
         "apk_name":        os.path.basename(apk_path),
         "package_name":    package_name,
