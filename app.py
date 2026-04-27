@@ -1,10 +1,3 @@
-"""
-=================================================
-  Fake Banking APK Detection — Flask Backend
-  app.py  (Hugging Face Spaces Version)
-=================================================
-"""
-
 from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
@@ -23,19 +16,12 @@ app.config['MAX_CONTENT_LENGTH'] = None
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
-# ════════════════════════════════════════════════
-#  AUTO-DOWNLOAD MODELS FROM HUGGING FACE HUB
-#  Runs once when container starts
-# ════════════════════════════════════════════════
 
 def download_models():
-    """
-    Downloads model files from HF Hub if not already present.
-    This runs every time the container starts.
-    """
+    
     from huggingface_hub import hf_hub_download
 
-    HF_REPO_ID = "shubmrj/bankshield-models" 
+    HF_REPO_ID = "shubmrj/bankshield-models"
 
     os.makedirs("models", exist_ok=True)
 
@@ -58,19 +44,14 @@ def download_models():
                     local_dir="models",
                     local_dir_use_symlinks=False
                 )
-                print(f"✅ {filename} ready")
+                print(f" {filename} ready")
             except Exception as e:
-                print(f"❌ Failed to download {filename}: {e}")
+                print(f" Failed to download {filename}: {e}")
         else:
-            print(f"✅ {filename} already exists")
+            print(f" {filename} already exists")
 
-# Run download before anything else
-print("\n" + "="*50)
-print("  Downloading model files from HF Hub...")
-print("="*50)
 download_models()
 
-# ── Load model files ──────────────────────────────
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
 SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
@@ -81,16 +62,14 @@ try:
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    print(f"\n✅ Model loaded: {type(model).__name__}")
+    print(f"\Model loaded: {type(model).__name__}")
     print(f"   Features: {len(top_features)}")
 except Exception as e:
-    print(f"❌ Model load failed: {e}")
+    print(f"Model load failed: {e}")
     model = top_features = scaler = label_encoder = None
 
 
-# ════════════════════════════════════════════════
-#  ROUTES (same as before)
-# ════════════════════════════════════════════════
+
 
 @app.route('/')
 def index():
@@ -192,9 +171,6 @@ def get_features():
     return jsonify({'features': top_features, 'count': len(top_features)})
 
 
-# ════════════════════════════════════════════════
-#  RUN — Port 7860 required for HF Spaces
-# ════════════════════════════════════════════════
+
 if __name__ == '__main__':
-    print("\n🛡️  BankShield running at http://0.0.0.0:7860")
     app.run(host='0.0.0.0', port=7860, debug=False)
