@@ -1,89 +1,62 @@
+
 import os
 import hashlib
 
 
 def extract_features(apk_path: str, top_features: list) -> dict:
     try:
-        # androguard 4.x import style
-        from androguard.core.apk import APK
         from androguard.misc import AnalyzeAPK
     except ImportError:
         raise ImportError("androguard not installed. Run: pip install androguard==4.1.2")
 
+    a    = None
+    d    = None
+    dx   = None
+
+    # Try full analysis first
     try:
-        # androguard 4.x — AnalyzeAPK still works
         a, d, dx = AnalyzeAPK(apk_path)
-    except Exception as e:
-        # Fallback: just parse APK without full analysis
+    except Exception as e1:
+        print(f"Full analysis failed ({e1}), trying APK-only parse...")
         try:
             from androguard.core.apk import APK
             a = APK(apk_path)
-            d = None
-            dx = None
         except Exception as e2:
-            raise Exception(f"Could not parse APK: {e2}")
+            raise Exception(f"Cannot parse APK: {e2}")
 
-    # ── Raw extractions ─────────────────────────────
-    try:
-        permissions = set(a.get_permissions())
-    except Exception:
-        permissions = set()
+    # ── Safe extractions ─────────────────────────
+    def safe(fn, default):
+        try:
+            return fn()
+        except Exception:
+            return default
 
-    try:
-        activities = a.get_activities()
-    except Exception:
-        activities = []
+    permissions  = safe(lambda: set(a.get_permissions()), set())
+    activities   = safe(lambda: a.get_activities(), [])
+    services     = safe(lambda: a.get_services(), [])
+    receivers    = safe(lambda: a.get_receivers(), [])
+    package_name = safe(lambda: a.get_package(), "unknown")
+    app_name     = safe(lambda: a.get_app_name(), "Unknown")
+    min_sdk      = safe(lambda: a.get_min_sdk_version(), "?")
+    target_sdk   = safe(lambda: a.get_target_sdk_version(), "?")
 
-    try:
-        services = a.get_services()
-    except Exception:
-        services = []
-
-    try:
-        receivers = a.get_receivers()
-    except Exception:
-        receivers = []
-
-    try:
-        package_name = a.get_package()
-    except Exception:
-        package_name = "unknown"
-
-    try:
-        app_name = a.get_app_name()
-    except Exception:
-        app_name = "Unknown"
-
-    try:
-        min_sdk = a.get_min_sdk_version()
-    except Exception:
-        min_sdk = "?"
-
-    try:
-        target_sdk = a.get_target_sdk_version()
-    except Exception:
-        target_sdk = "?"
-
-    # Strip android.permission. prefix for matching
+    # Short permission names for matching
     short_perms = set()
     for p in permissions:
-        parts = p.split('.')
-        short_perms.add(parts[-1].upper())
+        short_perms.add(p.split('.')[-1].upper())
         short_perms.add(p.upper())
 
-    # ── API calls (only if dx available) ────────────
+    # ── API calls ────────────────────────────────
     api_calls = set()
     if dx is not None:
         try:
             for method in dx.get_methods():
                 for _, call, _ in method.get_xref_to():
-                    class_name  = call.get_class_name()
-                    method_name = call.get_name()
-                    api_calls.add(f"{class_name}->{method_name}")
+                    api_calls.add(f"{call.get_class_name()}->{call.get_name()}")
         except Exception:
             pass
 
-    # ── Build feature vector ─────────────────────────
+    # ── Feature vector ───────────────────────────
     feature_vector = {}
     for feat in top_features:
         feat_upper = feat.upper()
@@ -94,13 +67,13 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         )
         feature_vector[feat] = 1 if matched else 0
 
-    # ── Metadata ─────────────────────────────────────
+    # ── Metadata ─────────────────────────────────
     meta = {
         "apk_name":        os.path.basename(apk_path),
         "package_name":    package_name,
         "app_name":        app_name or "Unknown",
-        "min_sdk":         min_sdk or "?",
-        "target_sdk":      target_sdk or "?",
+        "min_sdk":         str(min_sdk) if min_sdk else "?",
+        "target_sdk":      str(target_sdk) if target_sdk else "?",
         "permissions":     sorted(list(permissions)),
         "num_permissions": len(permissions),
         "num_activities":  len(activities),
@@ -137,7 +110,6 @@ def _get_risk_signals(permissions: set, api_calls: set) -> list:
         'getDeviceId', 'getSubscriberId', 'sendTextMessage',
         'execCommand', 'DexClassLoader', 'loadClass',
     ]
-
     signals = []
     for p in HIGH_RISK_PERMS:
         if p in permissions:
@@ -145,5 +117,4 @@ def _get_risk_signals(permissions: set, api_calls: set) -> list:
     for api in HIGH_RISK_APIS:
         if any(api.lower() in call.lower() for call in api_calls):
             signals.append({'type': 'api_call', 'name': api, 'severity': 'medium'})
-
     return signals[:10]

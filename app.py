@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import shap
 import os
-import sys
 import traceback
 import tempfile
 
@@ -13,15 +12,17 @@ from apk_extractor import extract_features
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = None
 
-
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
+# ════════════════════════════════════════════════
+#  DOWNLOAD MODELS FROM HF HUB
+# ════════════════════════════════════════════════
 
 def download_models():
     import requests
 
-    HF_TOKEN  = os.environ.get("HF_TOKEN", None)
+    HF_TOKEN   = os.environ.get("HF_TOKEN", None)
     if HF_TOKEN:
         HF_TOKEN = HF_TOKEN.strip()
     models_dir = "/app/models"
@@ -30,67 +31,66 @@ def download_models():
     headers = {}
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
-        print(f"✅ HF Token loaded")
+        print("✅ HF Token loaded")
     else:
-        print("⚠️  No HF_TOKEN found in environment")
+        print("⚠️  No HF_TOKEN found")
 
     BASE_URL = "https://huggingface.co/shubmrj/bankshield-models/resolve/main"
-
-    files = [
-        "best_model.pkl",
-        "top_features.pkl",
-        "scaler.pkl",
-        "label_encoder.pkl"
-    ]
+    files    = ["best_model.pkl", "top_features.pkl", "scaler.pkl", "label_encoder.pkl"]
 
     for filename in files:
         dest = os.path.join(models_dir, filename)
         url  = f"{BASE_URL}/{filename}"
-        print(f"  Downloading {filename} from {url}")
+        print(f"⬇️  Downloading {filename}...")
         try:
-            r = requests.get(url, headers=headers, timeout=120)
-            print(f"   HTTP Status: {r.status_code}")
+            r = requests.get(url, headers=headers, timeout=180)
+            print(f"   HTTP {r.status_code}")
             if r.status_code == 200:
                 with open(dest, 'wb') as f:
                     f.write(r.content)
-                print(f" {filename} saved — {os.path.getsize(dest)} bytes")
+                print(f"✅ {filename} — {os.path.getsize(dest)} bytes")
             else:
-                print(f" Failed {filename}: HTTP {r.status_code} — {r.text[:200]}")
+                print(f"❌ Failed {filename}: {r.status_code} — {r.text[:200]}")
         except Exception as e:
-            print(f" Exception on {filename}: {e}")
+            print(f"❌ Exception {filename}: {e}")
 
-    print(f"Files in {models_dir} after download: {os.listdir(models_dir)}")
+    print(f"Files in {models_dir}: {os.listdir(models_dir)}")
 
-print("="*50)
+print("=" * 50)
 print("  Starting model download...")
-print("="*50)
+print("=" * 50)
 download_models()
-print("="*50)
-print("  Download complete. Loading models...")
-print("="*50)
+print("=" * 50)
+print("  Loading models...")
+print("=" * 50)
 
-MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
-FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
-SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
-LE_PATH       = os.path.join(BASE_DIR, 'models', 'label_encoder.pkl')
+# ════════════════════════════════════════════════
+#  LOAD MODELS
+# ════════════════════════════════════════════════
 
+MODEL_PATH    = "/app/models/best_model.pkl"
+FEATURES_PATH = "/app/models/top_features.pkl"
+SCALER_PATH   = "/app/models/scaler.pkl"
+LE_PATH       = "/app/models/label_encoder.pkl"
 
 try:
     model         = joblib.load(MODEL_PATH)
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    print(f" Model loaded: {type(model).__name__}")
+    print(f"✅ Model loaded: {type(model).__name__}")
     print(f"   Features: {len(top_features)}")
+    print(f"   numpy version: {np.__version__}")
 except Exception as e:
-    print(f" Model load failed: {e}")
+    print(f"❌ Model load failed: {e}")
     print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
-    print(f"   BASE_DIR: {BASE_DIR}")
-    print(f"   Files in models/: {os.listdir(os.path.join(BASE_DIR, 'models')) if os.path.exists(os.path.join(BASE_DIR, 'models')) else 'folder missing'}")
+    print(f"   numpy version: {np.__version__}")
     model = top_features = scaler = label_encoder = None
 
 
-
+# ════════════════════════════════════════════════
+#  ROUTES
+# ════════════════════════════════════════════════
 
 @app.route('/')
 def index():
@@ -101,7 +101,7 @@ def index():
 def scan_apk():
     if model is None:
         return jsonify({'success': False,
-                        'error': 'Model not loaded.'}), 500
+                        'error': 'Model not loaded. Check server logs.'}), 500
 
     if 'apk' not in request.files:
         return jsonify({'success': False, 'error': 'No APK file received.'}), 400
@@ -115,17 +115,18 @@ def scan_apk():
 
     try:
         file.save(tmp_path)
+        print(f"APK saved: {os.path.getsize(tmp_path)} bytes")
 
         try:
             feature_vector, meta = extract_features(tmp_path, top_features)
+            print(f"Features extracted: {sum(feature_vector.values())} active")
         except ImportError as ie:
             return jsonify({'success': False, 'error': str(ie)}), 500
         except Exception as pe:
-            return jsonify({
-                'success': False,
-                'error': f'Could not parse APK: {str(pe)}',
-                'hint': 'Make sure the file is a valid Android APK'
-            }), 422
+            print(f"APK parse error: {pe}")
+            traceback.print_exc()
+            return jsonify({'success': False,
+                            'error': f'Could not parse APK: {str(pe)}'}), 422
 
         row = pd.DataFrame([feature_vector])
         for feat in top_features:
@@ -151,8 +152,8 @@ def scan_apk():
                         'direction': 'suspicious' if impact[feat] > 0 else 'safe',
                         'impact':    round(float(impact[feat]), 4)
                     })
-        except Exception:
-            pass
+        except Exception as se:
+            print(f"SHAP skipped: {se}")
 
         if confidence >= 0.85:
             risk_level, risk_color = 'CRITICAL', '#ff2d55'
@@ -162,6 +163,8 @@ def scan_apk():
             risk_level, risk_color = 'MEDIUM', '#ffd60a'
         else:
             risk_level, risk_color = 'LOW', '#30d158'
+
+        print(f"Result: {'MALICIOUS' if pred==1 else 'LEGITIMATE'} — {confidence*100:.1f}%")
 
         return jsonify({
             'success':           True,
@@ -195,6 +198,9 @@ def get_features():
     return jsonify({'features': top_features, 'count': len(top_features)})
 
 
-
+# ════════════════════════════════════════════════
+#  RUN — port 7860 required for HF Spaces
+# ════════════════════════════════════════════════
 if __name__ == '__main__':
+    print("🛡️  BankShield running at http://0.0.0.0:7860")
     app.run(host='0.0.0.0', port=7860, debug=False)
