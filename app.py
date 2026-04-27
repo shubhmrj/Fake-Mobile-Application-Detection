@@ -1,4 +1,8 @@
 from flask import Flask, request, jsonify, render_template
+import subprocess
+import sys
+
+subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy==1.24.0", "--quiet"])
 import joblib
 import pandas as pd
 import numpy as np
