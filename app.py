@@ -14,7 +14,6 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = None
 UPLOAD_FOLDER   = tempfile.gettempdir()
 BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
-
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
 SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
