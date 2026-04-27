@@ -1,3 +1,10 @@
+"""
+=================================================
+  Fake Banking APK Detection — Flask Backend
+  app.py  (Hugging Face Spaces Version)
+=================================================
+"""
+
 from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
@@ -10,10 +17,60 @@ import tempfile
 from apk_extractor import extract_features
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = None
 
-app.config["MAX_CONTENT_LENGTH"] = None
-UPLOAD_FOLDER   = tempfile.gettempdir()
-BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = tempfile.gettempdir()
+
+# ════════════════════════════════════════════════
+#  AUTO-DOWNLOAD MODELS FROM HUGGING FACE HUB
+#  Runs once when container starts
+# ════════════════════════════════════════════════
+
+def download_models():
+    """
+    Downloads model files from HF Hub if not already present.
+    This runs every time the container starts.
+    """
+    from huggingface_hub import hf_hub_download
+
+    # ▶ CHANGE THIS to your HF username
+    HF_REPO_ID = "YOUR_HF_USERNAME/bankshield-models"
+
+    os.makedirs("models", exist_ok=True)
+
+    files = [
+        "best_model.pkl",
+        "top_features.pkl",
+        "scaler.pkl",
+        "label_encoder.pkl"
+    ]
+
+    for filename in files:
+        dest = os.path.join("models", filename)
+        if not os.path.exists(dest):
+            print(f"⬇️  Downloading {filename}...")
+            try:
+                hf_hub_download(
+                    repo_id=HF_REPO_ID,
+                    filename=filename,
+                    repo_type="model",
+                    local_dir="models",
+                    local_dir_use_symlinks=False
+                )
+                print(f"✅ {filename} ready")
+            except Exception as e:
+                print(f"❌ Failed to download {filename}: {e}")
+        else:
+            print(f"✅ {filename} already exists")
+
+# Run download before anything else
+print("\n" + "="*50)
+print("  Downloading model files from HF Hub...")
+print("="*50)
+download_models()
+
+# ── Load model files ──────────────────────────────
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
 SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
@@ -24,12 +81,16 @@ try:
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    print("✅ Model files loaded!")
-    print(f"   Model:    {type(model).__name__}")
+    print(f"\n✅ Model loaded: {type(model).__name__}")
     print(f"   Features: {len(top_features)}")
 except Exception as e:
-    print(f"⚠️  Model load failed: {e}")
+    print(f"❌ Model load failed: {e}")
     model = top_features = scaler = label_encoder = None
+
+
+# ════════════════════════════════════════════════
+#  ROUTES (same as before)
+# ════════════════════════════════════════════════
 
 @app.route('/')
 def index():
@@ -38,13 +99,9 @@ def index():
 
 @app.route('/scan', methods=['POST'])
 def scan_apk():
-    """
-    Main endpoint — accepts .apk upload,
-    extracts features, runs prediction.
-    """
     if model is None:
         return jsonify({'success': False,
-                        'error': 'Model not loaded. Place .pkl files in models/ folder.'}), 500
+                        'error': 'Model not loaded.'}), 500
 
     if 'apk' not in request.files:
         return jsonify({'success': False, 'error': 'No APK file received.'}), 400
@@ -52,12 +109,13 @@ def scan_apk():
     file = request.files['apk']
 
     if not file.filename.lower().endswith('.apk'):
-        return jsonify({'success': False, 'error': 'File must be a .apk file.'}), 400
+        return jsonify({'success': False, 'error': 'File must be .apk'}), 400
 
     tmp_path = os.path.join(UPLOAD_FOLDER, 'scan_target.apk')
 
     try:
         file.save(tmp_path)
+
         try:
             feature_vector, meta = extract_features(tmp_path, top_features)
         except ImportError as ie:
@@ -133,7 +191,10 @@ def get_features():
         return jsonify({'error': 'Model not loaded'}), 500
     return jsonify({'features': top_features, 'count': len(top_features)})
 
+
+# ════════════════════════════════════════════════
+#  RUN — Port 7860 required for HF Spaces
+# ════════════════════════════════════════════════
 if __name__ == '__main__':
-    
-    print("  Open: http://127.0.0.1:5000")
-    app.run(debug=True, port=5000)
+    print("\n🛡️  BankShield running at http://0.0.0.0:7860")
+    app.run(host='0.0.0.0', port=7860, debug=False)
