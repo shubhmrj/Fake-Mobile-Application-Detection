@@ -18,12 +18,14 @@ UPLOAD_FOLDER = tempfile.gettempdir()
 
 
 def download_models():
-    
     from huggingface_hub import hf_hub_download
 
     HF_REPO_ID = "shubmrj/bankshield-models"
+    HF_TOKEN   = os.environ.get("HF_TOKEN", None)  # reads from Space secret
 
-    os.makedirs("models", exist_ok=True)
+    # Always use absolute path inside container
+    models_dir = os.path.join(BASE_DIR, "models")
+    os.makedirs(models_dir, exist_ok=True)
 
     files = [
         "best_model.pkl",
@@ -33,39 +35,41 @@ def download_models():
     ]
 
     for filename in files:
-        dest = os.path.join("models", filename)
+        dest = os.path.join(models_dir, filename)
         if not os.path.exists(dest):
-            print(f"⬇️  Downloading {filename}...")
+            print(f" Downloading {filename}...")
             try:
-                hf_hub_download(
+                downloaded = hf_hub_download(
                     repo_id=HF_REPO_ID,
                     filename=filename,
                     repo_type="model",
-                    local_dir="models",
-                    local_dir_use_symlinks=False
+                    token=HF_TOKEN,
+                    local_dir=models_dir,
                 )
-                print(f" {filename} ready")
+                print(f"{filename} saved to {downloaded}")
             except Exception as e:
-                print(f" Failed to download {filename}: {e}")
+                print(f"FAILED {filename}: {e}")
         else:
-            print(f" {filename} already exists")
-
-download_models()
+            print(f"✅ {filename} already at {dest}")
 
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
 SCALER_PATH   = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
 LE_PATH       = os.path.join(BASE_DIR, 'models', 'label_encoder.pkl')
 
+
 try:
     model         = joblib.load(MODEL_PATH)
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    print(f"\Model loaded: {type(model).__name__}")
+    print(f" Model loaded: {type(model).__name__}")
     print(f"   Features: {len(top_features)}")
 except Exception as e:
-    print(f"Model load failed: {e}")
+    print(f" Model load failed: {e}")
+    print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
+    print(f"   BASE_DIR: {BASE_DIR}")
+    print(f"   Files in models/: {os.listdir(os.path.join(BASE_DIR, 'models')) if os.path.exists(os.path.join(BASE_DIR, 'models')) else 'folder missing'}")
     model = top_features = scaler = label_encoder = None
 
 
