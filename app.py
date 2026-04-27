@@ -21,6 +21,8 @@ def download_models():
     import requests
 
     HF_TOKEN  = os.environ.get("HF_TOKEN", None)
+    if HF_TOKEN:
+        HF_TOKEN = HF_TOKEN.strip()
     models_dir = "/app/models"
     os.makedirs(models_dir, exist_ok=True)
 
@@ -55,6 +57,8 @@ def download_models():
                 print(f"❌ Failed {filename}: HTTP {r.status_code} — {r.text[:200]}")
         except Exception as e:
             print(f"❌ Exception on {filename}: {e}")
+
+    print(f"Files in {models_dir} after download: {os.listdir(models_dir)}")
 
 print("="*50)
 print("  Starting model download...")
