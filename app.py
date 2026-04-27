@@ -15,10 +15,6 @@ app.config['MAX_CONTENT_LENGTH'] = None
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
-# ════════════════════════════════════════════════
-#  DOWNLOAD MODELS FROM HF HUB
-# ════════════════════════════════════════════════
-
 def download_models():
     import requests
 
@@ -41,32 +37,19 @@ def download_models():
     for filename in files:
         dest = os.path.join(models_dir, filename)
         url  = f"{BASE_URL}/{filename}"
-        print(f"⬇️  Downloading {filename}...")
         try:
             r = requests.get(url, headers=headers, timeout=180)
             print(f"   HTTP {r.status_code}")
             if r.status_code == 200:
                 with open(dest, 'wb') as f:
                     f.write(r.content)
-                print(f"✅ {filename} — {os.path.getsize(dest)} bytes")
             else:
-                print(f"❌ Failed {filename}: {r.status_code} — {r.text[:200]}")
+                print(f"Failed {filename}: {r.status_code} — {r.text[:200]}")
         except Exception as e:
-            print(f"❌ Exception {filename}: {e}")
+            print(f"Exception {filename}: {e}")
 
     print(f"Files in {models_dir}: {os.listdir(models_dir)}")
 
-print("=" * 50)
-print("  Starting model download...")
-print("=" * 50)
-download_models()
-print("=" * 50)
-print("  Loading models...")
-print("=" * 50)
-
-# ════════════════════════════════════════════════
-#  LOAD MODELS
-# ════════════════════════════════════════════════
 
 MODEL_PATH    = "/app/models/best_model.pkl"
 FEATURES_PATH = "/app/models/top_features.pkl"
@@ -78,19 +61,10 @@ try:
     top_features  = joblib.load(FEATURES_PATH)
     scaler        = joblib.load(SCALER_PATH)
     label_encoder = joblib.load(LE_PATH)
-    print(f"✅ Model loaded: {type(model).__name__}")
-    print(f"   Features: {len(top_features)}")
-    print(f"   numpy version: {np.__version__}")
+    
 except Exception as e:
-    print(f"❌ Model load failed: {e}")
-    print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
-    print(f"   numpy version: {np.__version__}")
     model = top_features = scaler = label_encoder = None
 
-
-# ════════════════════════════════════════════════
-#  ROUTES
-# ════════════════════════════════════════════════
 
 @app.route('/')
 def index():
@@ -198,9 +172,5 @@ def get_features():
     return jsonify({'features': top_features, 'count': len(top_features)})
 
 
-# ════════════════════════════════════════════════
-#  RUN — port 7860 required for HF Spaces
-# ════════════════════════════════════════════════
 if __name__ == '__main__':
-    print("🛡️  BankShield running at http://0.0.0.0:7860")
     app.run(host='0.0.0.0', port=7860, debug=False)
