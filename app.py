@@ -19,6 +19,7 @@ from apk_extractor import extract_features
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = None
 
+
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
@@ -34,8 +35,7 @@ def download_models():
     """
     from huggingface_hub import hf_hub_download
 
-    # ▶ CHANGE THIS to your HF username
-    HF_REPO_ID = "YOUR_HF_USERNAME/bankshield-models"
+    HF_REPO_ID = "shubmrj/bankshield-models" 
 
     os.makedirs("models", exist_ok=True)
 
