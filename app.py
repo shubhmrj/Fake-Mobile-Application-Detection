@@ -18,35 +18,51 @@ UPLOAD_FOLDER = tempfile.gettempdir()
 
 
 def download_models():
-    import huggingface_hub
+    import requests
 
-    HF_REPO_ID = "shubmrj/bankshield-models"
-    HF_TOKEN   = os.environ.get("HF_TOKEN", None)
+    HF_TOKEN  = os.environ.get("HF_TOKEN", None)
     models_dir = "/app/models"
     os.makedirs(models_dir, exist_ok=True)
 
-    print(f"HF Token found: {HF_TOKEN is not None}")
-    print(f"huggingface_hub version: {huggingface_hub.__version__}")
+    headers = {}
+    if HF_TOKEN:
+        headers["Authorization"] = f"Bearer {HF_TOKEN}"
+        print(f"✅ HF Token loaded")
+    else:
+        print("⚠️  No HF_TOKEN found in environment")
 
-    files = ["best_model.pkl", "top_features.pkl", "scaler.pkl", "label_encoder.pkl"]
+    BASE_URL = "https://huggingface.co/shubmrj/bankshield-models/resolve/main"
+
+    files = [
+        "best_model.pkl",
+        "top_features.pkl",
+        "scaler.pkl",
+        "label_encoder.pkl"
+    ]
 
     for filename in files:
         dest = os.path.join(models_dir, filename)
+        url  = f"{BASE_URL}/{filename}"
+        print(f"⬇️  Downloading {filename} from {url}")
         try:
-            print(f"⬇️  Downloading {filename}...")
-            huggingface_hub.hf_hub_download(
-                repo_id=HF_REPO_ID,
-                filename=filename,
-                repo_type="model",
-                token=HF_TOKEN,
-                local_dir=models_dir,
-                local_dir_use_symlinks=False,
-                force_download=True        # ← force re-download every time
-            )
-            print(f"✅ {filename} done — size: {os.path.getsize(dest)} bytes")
+            r = requests.get(url, headers=headers, timeout=120)
+            print(f"   HTTP Status: {r.status_code}")
+            if r.status_code == 200:
+                with open(dest, 'wb') as f:
+                    f.write(r.content)
+                print(f"✅ {filename} saved — {os.path.getsize(dest)} bytes")
+            else:
+                print(f"❌ Failed {filename}: HTTP {r.status_code} — {r.text[:200]}")
         except Exception as e:
-            print(f"❌ FAILED {filename}: {type(e).__name__}: {e}")
-            
+            print(f"❌ Exception on {filename}: {e}")
+
+print("="*50)
+print("  Starting model download...")
+print("="*50)
+download_models()
+print("="*50)
+print("  Download complete. Loading models...")
+print("="*50)
 
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
