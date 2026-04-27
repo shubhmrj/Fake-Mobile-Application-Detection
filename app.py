@@ -18,39 +18,35 @@ UPLOAD_FOLDER = tempfile.gettempdir()
 
 
 def download_models():
-    from huggingface_hub import hf_hub_download
+    import huggingface_hub
 
     HF_REPO_ID = "shubmrj/bankshield-models"
-    HF_TOKEN   = os.environ.get("HF_TOKEN", None)  # reads from Space secret
-
-    # Always use absolute path inside container
-    models_dir = os.path.join(BASE_DIR, "models")
+    HF_TOKEN   = os.environ.get("HF_TOKEN", None)
+    models_dir = "/app/models"
     os.makedirs(models_dir, exist_ok=True)
 
-    files = [
-        "best_model.pkl",
-        "top_features.pkl",
-        "scaler.pkl",
-        "label_encoder.pkl"
-    ]
+    print(f"HF Token found: {HF_TOKEN is not None}")
+    print(f"huggingface_hub version: {huggingface_hub.__version__}")
+
+    files = ["best_model.pkl", "top_features.pkl", "scaler.pkl", "label_encoder.pkl"]
 
     for filename in files:
         dest = os.path.join(models_dir, filename)
-        if not os.path.exists(dest):
-            print(f" Downloading {filename}...")
-            try:
-                downloaded = hf_hub_download(
-                    repo_id=HF_REPO_ID,
-                    filename=filename,
-                    repo_type="model",
-                    token=HF_TOKEN,
-                    local_dir=models_dir,
-                )
-                print(f"{filename} saved to {downloaded}")
-            except Exception as e:
-                print(f"FAILED {filename}: {e}")
-        else:
-            print(f"✅ {filename} already at {dest}")
+        try:
+            print(f"⬇️  Downloading {filename}...")
+            huggingface_hub.hf_hub_download(
+                repo_id=HF_REPO_ID,
+                filename=filename,
+                repo_type="model",
+                token=HF_TOKEN,
+                local_dir=models_dir,
+                local_dir_use_symlinks=False,
+                force_download=True        # ← force re-download every time
+            )
+            print(f"✅ {filename} done — size: {os.path.getsize(dest)} bytes")
+        except Exception as e:
+            print(f"❌ FAILED {filename}: {type(e).__name__}: {e}")
+            
 
 MODEL_PATH    = os.path.join(BASE_DIR, 'models', 'best_model.pkl')
 FEATURES_PATH = os.path.join(BASE_DIR, 'models', 'top_features.pkl')
