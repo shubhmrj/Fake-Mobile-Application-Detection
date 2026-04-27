@@ -20,3 +20,13 @@ env/
 *.tmp
 *.log
 .DS_Store
+
+# .gitignore
+Models/
+models/
+*.pkl
+Visualization_Graph/
+*.png
+*.jpg
+__pycache__/
+*.pyc
