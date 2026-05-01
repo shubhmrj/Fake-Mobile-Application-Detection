@@ -1,12 +1,14 @@
 import os
 import hashlib
+import logging
 
+logger = logging.getLogger(__name__)
 
-def extract_features(apk_path: str, top_features: list) -> dict:
+def extract_features(apk_path: str, top_features: list) -> tuple:
     try:
         from androguard.misc import AnalyzeAPK
     except ImportError:
-        raise ImportError("androguard not installed. Run: pip install androguard==4.1.2")
+        raise ImportError("androguard not installed. Run: pip install androguard")
 
     a    = None
     d    = None
@@ -16,7 +18,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     try:
         a, d, dx = AnalyzeAPK(apk_path)
     except Exception as e1:
-        print(f"Full analysis failed ({e1}), trying APK-only parse...")
+        logger.warning(f"Full analysis failed ({e1}), trying APK-only parse...")
         try:
             from androguard.core.apk import APK
             a = APK(apk_path)
@@ -26,7 +28,8 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     # ── Safe extractions ─────────────────────────
     def safe(fn, default):
         try:
-            return fn()
+            res = fn()
+            return res if res is not None else default
         except Exception:
             return default
 
@@ -39,11 +42,12 @@ def extract_features(apk_path: str, top_features: list) -> dict:
     min_sdk      = safe(lambda: a.get_min_sdk_version(), "?")
     target_sdk   = safe(lambda: a.get_target_sdk_version(), "?")
 
-    # Short permission names for matching
-    short_perms = set()
+    # Normalized permission names for matching
+    norm_perms = set()
     for p in permissions:
-        short_perms.add(p.split('.')[-1].upper())
-        short_perms.add(p.upper())
+        # Match both full name and short name (e.g., READ_SMS)
+        norm_perms.add(p.upper())
+        norm_perms.add(p.split('.')[-1].upper())
 
     # ── API calls ────────────────────────────────
     api_calls = set()
@@ -52,17 +56,18 @@ def extract_features(apk_path: str, top_features: list) -> dict:
             for method in dx.get_methods():
                 for _, call, _ in method.get_xref_to():
                     api_calls.add(f"{call.get_class_name()}->{call.get_name()}")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"API call extraction partial failure: {e}")
 
     # ── Feature vector ───────────────────────────
     feature_vector = {}
     for feat in top_features:
         feat_upper = feat.upper()
+        # Check if the feature (permission or API) matches
         matched = (
-            feat_upper in short_perms
-            or any(feat_upper in p for p in short_perms)
-            or any(p.endswith(feat_upper) for p in short_perms)
+            feat_upper in norm_perms
+            or any(feat_upper in p for p in norm_perms)
+            or any(feat_upper in call.upper() for call in api_calls)
         )
         feature_vector[feat] = 1 if matched else 0
 
@@ -82,7 +87,7 @@ def extract_features(apk_path: str, top_features: list) -> dict:
         "md5":             _md5(apk_path),
         "active_features": sum(feature_vector.values()),
         "total_features":  len(feature_vector),
-        "risk_signals":    _get_risk_signals(short_perms, api_calls),
+        "risk_signals":    _get_risk_signals(norm_perms, api_calls),
     }
 
     return feature_vector, meta

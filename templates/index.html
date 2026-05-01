@@ -28,6 +28,150 @@
       --r:          10px;
       --r-lg:       18px;
     }
+
+    /* ── Mobile Responsive Base ─────────── */
+    @media (max-width: 768px) {
+      :root {
+        --r: 8px;
+        --r-lg: 12px;
+      }
+      .wrap {
+        padding: 0 16px 40px;
+      }
+      .logo h1 {
+        font-size: 20px;
+      }
+      .logo p {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+      }
+      .online-badge {
+        font-size: 10px;
+        padding: 5px 12px;
+      }
+      .version-badge {
+        display: none;
+      }
+      .header-badge-group {
+        gap: 8px;
+      }
+      .hero-tagline p {
+        font-size: 13px;
+      }
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .stat {
+        padding: 14px;
+      }
+      .stat-n {
+        font-size: 20px;
+      }
+      .stat-l {
+        font-size: 9px;
+      }
+      .section-header h2 {
+        font-size: 18px;
+      }
+      .section-header p {
+        font-size: 12px;
+      }
+      .steps-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .step-card {
+        padding: 20px;
+        margin-bottom: 2px;
+      }
+      .step-icon {
+        font-size: 28px;
+      }
+      .step-card h3 {
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      .step-card p {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .preview-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .preview-meta {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .stack-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .stack-item {
+        padding: 12px 10px;
+        font-size: 10px;
+      }
+      .stack-icon {
+        font-size: 20px;
+      }
+      .main-card {
+        padding: 20px;
+      }
+      .card-title {
+        font-size: 16px;
+      }
+      .card-sub {
+        font-size: 12px;
+      }
+      #drop-zone {
+        padding: 32px 20px;
+      }
+      .drop-icon {
+        font-size: 36px;
+      }
+      .drop-title {
+        font-size: 14px;
+      }
+      .footer-main {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .footer-links {
+        justify-content: center;
+      }
+      .footer-link {
+        font-size: 11px;
+        padding: 6px 12px;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+      }
+      /* Info tabs mobile */
+      .info-tabs-nav {
+        flex-direction: column;
+        gap: 0;
+      }
+      .info-tab-btn {
+        width: 100%;
+        text-align: center;
+        padding: 14px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+      }
+      .info-tab-btn:last-child {
+        border-bottom: none;
+      }
+      .info-tab-btn.active {
+        border-bottom-color: var(--green);
+      }
+      .info-tabs-content {
+        padding: 20px 16px;
+      }
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -86,6 +230,11 @@
       color: var(--muted); letter-spacing: 2.5px;
       text-transform: uppercase; margin-top: 2px;
     }
+    .header-badge-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
     .online-badge {
       font-family: var(--mono); font-size: 11px;
       padding: 6px 16px;
@@ -95,7 +244,51 @@
       letter-spacing: 1px;
       animation: pulse 3s ease-in-out infinite;
     }
+    .version-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--dim);
+      letter-spacing: 1px;
+    }
+    .info-toggle-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 8px 16px;
+      border: 1px solid var(--blue);
+      border-radius: 20px;
+      color: var(--blue);
+      background: rgba(76, 201, 240, 0.1);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .info-toggle-btn:hover {
+      background: rgba(76, 201, 240, 0.2);
+      box-shadow: 0 0 12px rgba(76, 201, 240, 0.3);
+    }
+    @media(max-width:768px){
+      .info-toggle-btn {
+        padding: 6px 12px;
+        font-size: 10px;
+      }
+    }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.55; } }
+    .hero-tagline {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .hero-tagline p {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.6;
+    }
 
     /* ── Stats row ──────────────────────── */
     .stats {
@@ -119,63 +312,142 @@
 
     /* ── Main card ──────────────────────── */
     .main-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-lg); padding: 36px;
+      background: linear-gradient(145deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 40px;
       margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .main-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-glow), transparent);
     }
     .card-tag {
-      font-family: var(--mono); font-size: 10px;
-      letter-spacing: 2.5px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 18px;
-      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
     }
     .card-tag::before {
-      content: ''; width: 6px; height: 6px;
-      border-radius: 50%; background: var(--green);
-      box-shadow: 0 0 6px var(--green);
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green), 0 0 20px var(--green-glow);
+      animation: pulse-dot 2s ease-in-out infinite;
     }
-    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-    .card-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+    .card-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 600px;
+    }
 
     /* ── Drop zone ──────────────────────── */
     #drop-zone {
       border: 2px dashed var(--border);
       border-radius: var(--r-lg);
-      padding: 52px 32px;
+      padding: 60px 40px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.25s;
+      transition: all 0.3s ease;
       position: relative;
-      background: var(--surface2);
+      background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+      overflow: hidden;
+    }
+    #drop-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0,255,136,0.03) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #drop-zone:hover::before, #drop-zone.drag-over::before {
+      opacity: 1;
     }
     #drop-zone:hover, #drop-zone.drag-over {
       border-color: var(--green);
-      background: var(--green-dim);
+      background: linear-gradient(145deg, rgba(0,255,136,0.05) 0%, var(--surface2) 100%);
+      transform: translateY(-2px);
     }
-    #drop-zone.drag-over { box-shadow: 0 0 32px rgba(0,255,136,0.12); }
+    #drop-zone.drag-over {
+      box-shadow: 0 8px 32px rgba(0,255,136,0.15), inset 0 0 20px rgba(0,255,136,0.05);
+      border-style: solid;
+    }
     #drop-zone.has-file {
-      border-color: var(--green); border-style: solid;
-      background: var(--green-dim);
+      border-color: var(--green);
+      border-style: solid;
+      background: linear-gradient(145deg, var(--green-dim) 0%, var(--surface2) 100%);
     }
     #file-input { display: none; }
 
     .drop-icon {
-      font-size: 44px; margin-bottom: 16px;
-      transition: transform 0.2s;
+      font-size: 56px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
-    #drop-zone:hover .drop-icon { transform: scale(1.08); }
+    #drop-zone:hover .drop-icon {
+      transform: scale(1.1) translateY(-5px);
+      filter: drop-shadow(0 8px 16px rgba(0,255,136,0.2));
+    }
 
     .drop-title {
-      font-size: 16px; font-weight: 700;
-      color: var(--text); margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
     }
     .drop-sub {
-      font-family: var(--mono); font-size: 11px;
-      color: var(--muted); letter-spacing: 1px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
     .drop-sub span {
-      color: var(--green); text-decoration: underline;
+      color: var(--green);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--green);
       cursor: pointer;
+      transition: all 0.2s;
+      padding-bottom: 2px;
+    }
+    .drop-sub span:hover {
+      color: var(--text);
+      border-bottom-style: solid;
     }
 
     /* file selected state */
@@ -203,18 +475,59 @@
 
     /* ── Scan button ────────────────────── */
     #scan-btn {
-      display: block; width: 100%;
-      margin-top: 24px; padding: 16px;
-      font-family: var(--mono); font-size: 13px;
-      font-weight: 700; letter-spacing: 2.5px;
+      display: block;
+      width: 100%;
+      margin-top: 28px;
+      padding: 18px 24px;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      background: linear-gradient(135deg, var(--green), #00c9ff);
-      color: #080c10; border: none; border-radius: var(--r);
-      cursor: pointer; transition: all 0.25s;
+      background: linear-gradient(135deg, var(--green) 0%, #00c9ff 50%, var(--green) 100%);
+      background-size: 200% 200%;
+      color: var(--bg);
+      border: none;
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,255,136,0.2);
     }
-    #scan-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,255,136,0.28); }
-    #scan-btn:active { transform: translateY(0); }
-    #scan-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    #scan-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+    #scan-btn:hover::before {
+      left: 100%;
+    }
+    #scan-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,255,136,0.35);
+      background-position: 100% 100%;
+    }
+    #scan-btn:active {
+      transform: translateY(-1px);
+    }
+    #scan-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: var(--dim);
+    }
+    #scan-btn:not(:disabled)::after {
+      content: '⚡';
+      margin-left: 10px;
+      font-size: 16px;
+    }
 
     /* ── Progress ───────────────────────── */
     #progress-section { display: none; margin-top: 28px; }
@@ -238,22 +551,30 @@
     .step-row {
       display: flex; align-items: center; gap: 12px;
       font-family: var(--mono); font-size: 11px; color: var(--dim);
-      transition: color 0.3s;
+      transition: all 0.3s;
+      padding: 4px 0;
     }
     .step-row.done   { color: var(--green); }
-    .step-row.active { color: var(--text); }
+    .step-row.active { color: var(--text); transform: translateX(5px); }
     .step-dot {
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--dim); flex-shrink: 0;
       transition: all 0.3s;
+      position: relative;
     }
-    .step-row.done   .step-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .step-row.done .step-dot::after {
+      content: '✓'; position: absolute; top: -5px; left: 0; font-size: 10px;
+    }
     .step-row.active .step-dot {
       background: var(--blue);
-      box-shadow: 0 0 6px var(--blue);
-      animation: blink-dot 0.8s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--blue);
+      animation: pulse-blue 1s infinite;
     }
-    @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes pulse-blue {
+      0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+    }
 
     /* ── Result section ─────────────────── */
     #result-section { display: none; margin-top: 28px; }
@@ -333,24 +654,31 @@
       color: var(--muted); margin-bottom: 12px;
     }
     .reason-row {
-      display: grid; grid-template-columns: 1fr auto auto;
+      display: grid; grid-template-columns: 1.2fr 0.8fr 1fr;
       align-items: center; gap: 12px;
-      padding: 11px 0; border-bottom: 1px solid var(--border);
+      padding: 14px 0; border-bottom: 1px solid var(--border);
       opacity: 0; transform: translateX(10px);
       transition: all 0.35s;
     }
     .reason-row:last-child { border-bottom: none; }
     .reason-row.vis { opacity:1; transform:translateX(0); }
     .reason-feat { font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-word; }
-    .reason-val {
-      font-family: var(--mono); font-size: 11px;
-      padding: 2px 8px; border-radius: 4px; flex-shrink: 0;
+    
+    /* Impact Bar */
+    .impact-bar-wrap {
+      height: 6px; background: var(--surface3);
+      border-radius: 3px; position: relative; overflow: hidden;
     }
-    .reason-val.on  { background: rgba(0,255,136,0.12); color: var(--green); }
-    .reason-val.off { background: var(--surface3); color: var(--dim); }
-    .reason-impact { font-family: var(--mono); font-size: 12px; font-weight: 700; flex-shrink: 0; }
-    .reason-impact.sus  { color: var(--red); }
-    .reason-impact.safe { color: var(--green); }
+    .impact-bar-fill {
+      height: 100%; position: absolute; top: 0;
+      transition: width 1s ease;
+    }
+    .impact-bar-fill.sus  { background: var(--red); right: 50%; }
+    .impact-bar-fill.safe { background: var(--green); left: 50%; }
+    .impact-center {
+      position: absolute; left: 50%; top: 0; bottom: 0;
+      width: 2px; background: var(--border); z-index: 2;
+    }
 
     /* permissions list */
     .perm-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
@@ -363,23 +691,971 @@
 
     /* scan-again btn */
     #scan-again {
-      display: block; width: 100%; margin-top: 24px;
-      padding: 13px; font-family: var(--mono); font-size: 12px;
-      letter-spacing: 2px; text-transform: uppercase;
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); border-radius: var(--r); cursor: pointer;
+      display: block;
+      width: 100%;
+      margin-top: 28px;
+      padding: 16px 24px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--muted);
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    #scan-again::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+    }
+    #scan-again:hover {
+      border-color: var(--green);
+      color: var(--bg);
+      transform: translateY(-2px);
+    }
+    #scan-again:hover::before {
+      opacity: 1;
+    }
+
+    /* ── How It Works Section ───────────── */
+    .how-it-works {
+      margin-bottom: 40px;
+    }
+    .section-header {
+      margin-bottom: 24px;
+    }
+    .section-tag {
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--green); margin-bottom: 8px;
+    }
+    .section-header h2 {
+      font-size: 22px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .section-header p {
+      font-size: 13px; color: var(--muted);
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media(max-width:640px){ .steps-grid { grid-template-columns: 1fr; } }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .step-card:hover {
+      border-color: var(--green-glow);
+      transform: translateY(-3px);
+    }
+    .step-num {
+      position: absolute;
+      top: 12px; right: 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .step-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .step-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step-card p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Sample Preview Section ──────────── */
+    .sample-preview {
+      margin-bottom: 40px;
+    }
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .preview-header {
+      background: var(--surface2);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-badge {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    .preview-badge.malicious {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(255,59,92,0.4);
+    }
+    .preview-confidence {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .preview-body {
+      padding: 20px;
+    }
+    .preview-meta {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .preview-meta div span:first-child {
+      color: var(--dim);
+    }
+    .risk-text.critical {
+      color: #ff2d55;
+      font-weight: 700;
+    }
+    .signal-title {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-family: var(--mono);
+    }
+    .signal-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .signal-chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(255,59,92,0.3);
+    }
+
+    /* ── Tech Stack Section ──────────────── */
+    .tech-stack {
+      margin-bottom: 40px;
+    }
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    @media(max-width:768px){ .stack-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media(max-width:480px){ .stack-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stack-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 12px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
       transition: all 0.2s;
     }
-    #scan-again:hover { border-color: #30363d; color: var(--text); background: var(--surface2); }
+    .stack-item:hover {
+      border-color: var(--green-glow);
+      background: var(--surface2);
+    }
+    .stack-icon {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    /* ── Info Tabs Section ──────────────── */
+    .info-tabs-section {
+      margin-bottom: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .info-tabs-nav {
+      display: flex;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .info-tab-btn {
+      flex: 1;
+      padding: 16px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .info-tab-btn:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.03);
+    }
+    .info-tab-btn.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+      background: var(--surface);
+    }
+    .info-tab-btn span {
+      font-size: 16px;
+    }
+    .info-tabs-content {
+      padding: 28px;
+      min-height: 280px;
+    }
+    @media(max-width:768px){
+      .info-tabs-content {
+        padding: 20px;
+      }
+    }
+    .info-tab-panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .info-tab-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tab-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media(max-width:768px){
+      .tab-content-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+    .tab-text h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .tab-text p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .tab-list {
+      list-style: none;
+      padding: 0;
+    }
+    .tab-list li {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-list li:last-child {
+      border-bottom: none;
+    }
+    .tab-list li strong {
+      color: var(--green);
+    }
+    .tab-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tab-stat-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+      text-align: center;
+    }
+    .tab-stat-num {
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    .tab-stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .tab-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+    }
+    .metric-row span:first-child {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .metric-bar {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .metric-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #00c9ff);
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+    .metric-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 700;
+      text-align: right;
+    }
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .feature-item {
+      display: grid;
+      grid-template-columns: 32px 1fr 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+    .feature-item.high {
+      border-left: 3px solid var(--red);
+    }
+    .feature-item.med {
+      border-left: 3px solid var(--amber);
+    }
+    .feature-rank {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      text-align: center;
+    }
+    .feature-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 700;
+    }
+    .feature-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .tab-deploy-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+    @media(max-width:640px){
+      .tab-deploy-flow {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .deploy-arrow {
+        transform: rotate(90deg);
+      }
+    }
+    .deploy-step {
+      text-align: center;
+    }
+    .deploy-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .deploy-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+    .deploy-arrow {
+      font-family: var(--mono);
+      font-size: 20px;
+      color: var(--dim);
+    }
+
+    /* ── Info Modal ───────────────────── */
+    .info-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .info-modal.active {
+      display: flex;
+    }
+    .info-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 16, 0.9);
+      backdrop-filter: blur(4px);
+      cursor: pointer;
+    }
+    .info-modal-content {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+      animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .info-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .info-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .info-modal-title span {
+      font-size: 24px;
+    }
+    .info-modal-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .info-modal-title p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .info-modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .info-modal-close:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: var(--red-dim);
+    }
+    .info-modal-nav {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      background: var(--surface2);
+    }
+    .info-modal-nav::-webkit-scrollbar {
+      height: 4px;
+    }
+    .info-modal-nav::-webkit-scrollbar-thumb {
+      background: var(--dim);
+      border-radius: 2px;
+    }
+    .info-modal-tab-btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .info-modal-tab-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .info-modal-tab-btn.active {
+      border-color: var(--blue);
+      background: rgba(76, 201, 240, 0.15);
+      color: var(--blue);
+    }
+    .info-modal-tab-btn span {
+      font-size: 14px;
+    }
+    .info-modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .info-modal-panel {
+      display: none;
+      animation: panelFadeIn 0.3s ease;
+    }
+    .info-modal-panel.active {
+      display: block;
+    }
+    @keyframes panelFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .info-modal-panel h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .info-modal-panel > p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Modal Steps */
+    .modal-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media(max-width:640px){
+      .modal-steps {
+        grid-template-columns: 1fr;
+      }
+    }
+    .modal-step {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+    .modal-step-num {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+    }
+    .modal-step-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+    .modal-step h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .modal-step p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Modal Preview Card */
+    .modal-preview-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .modal-preview-header {
+      background: var(--surface3);
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-preview-badge {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    .modal-preview-badge.malicious {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(255,59,92,0.4);
+    }
+    .modal-preview-confidence {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .modal-preview-body {
+      padding: 18px;
+    }
+    .modal-preview-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .modal-preview-meta div span:first-child {
+      color: var(--dim);
+    }
+    .modal-risk-text.critical {
+      color: #ff2d55;
+      font-weight: 700;
+    }
+    .modal-signal-title {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: var(--mono);
+    }
+    .modal-signal-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .modal-signal-chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(255,59,92,0.3);
+    }
+
+    /* Modal List */
+    .modal-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .modal-list li {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-list li:last-child {
+      border-bottom: none;
+    }
+    .modal-list li strong {
+      color: var(--green);
+    }
+
+    /* Modal Stats Row */
+    .modal-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .modal-stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      text-align: center;
+    }
+    .modal-stat-num {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    .modal-stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Modal Metrics */
+    .modal-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .modal-metric-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-metric-row span:first-child {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .modal-metric-bar {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .modal-metric-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #00c9ff);
+      border-radius: 4px;
+    }
+    .modal-metric-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    /* Modal Features List */
+    .modal-features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .modal-feature-item {
+      display: grid;
+      grid-template-columns: 32px 1fr 1.5fr;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+    @media(max-width:640px){
+      .modal-feature-item {
+        grid-template-columns: 32px 1fr;
+      }
+      .modal-feature-desc {
+        display: none;
+      }
+    }
+    .modal-feature-item.high {
+      border-left: 3px solid var(--red);
+    }
+    .modal-feature-item.med {
+      border-left: 3px solid var(--amber);
+    }
+    .modal-feature-rank {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      text-align: center;
+    }
+    .modal-feature-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 700;
+    }
+    .modal-feature-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Modal Deploy Flow */
+    .modal-deploy-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-top: 16px;
+    }
+    @media(max-width:640px){
+      .modal-deploy-flow {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .modal-deploy-arrow {
+        transform: rotate(90deg);
+      }
+    }
+    .modal-deploy-step {
+      text-align: center;
+    }
+    .modal-deploy-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .modal-deploy-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+    .modal-deploy-arrow {
+      font-family: var(--mono);
+      font-size: 20px;
+      color: var(--dim);
+    }
+
+    /* Modal Stack Grid */
+    .modal-stack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    @media(max-width:640px){
+      .modal-stack-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .modal-stack-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .modal-stack-item:hover {
+      border-color: var(--green-glow);
+    }
+    .modal-stack-icon {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
 
     /* ── Footer ─────────────────────────── */
-    footer {
-      margin-top: 64px; padding-top: 24px;
+    .enhanced-footer {
+      margin-top: 64px;
+      padding-top: 32px;
       border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
     }
-    footer p, footer span {
-      font-family: var(--mono); font-size: 11px; color: var(--dim);
+    .footer-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .footer-logo {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .footer-tagline {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .footer-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-link {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-link:hover {
+      border-color: var(--green-glow);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-bottom p {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
     }
 
     /* ── Toast ──────────────────────────── */
@@ -405,10 +1681,19 @@
         <div class="logo-icon">🛡️</div>
         <div>
           <h1>Bank<span>Shield</span></h1>
-          <p>APK Threat Scanner · ML-Powered</p>
+          <p>Protecting users from fake banking apps with machine learning</p>
         </div>
       </div>
-      <div class="online-badge">● SYSTEM ONLINE</div>
+      <div class="header-badge-group">
+        <div class="online-badge">● SYSTEM ONLINE</div>
+        <div class="version-badge">v1.0.0</div>
+        <button class="info-toggle-btn" onclick="openInfoModal()">
+          <span>ℹ️</span> Info
+        </button>
+      </div>
+    </div>
+    <div class="hero-tagline">
+      <p>Detect fake banking APKs before they steal credentials. Upload any Android app for instant ML-powered analysis with SHAP explanations.</p>
     </div>
   </header>
 
@@ -420,13 +1705,15 @@
     <div class="stat"><div class="stat-n">XGB</div><div class="stat-l">Classifier Type</div></div>
   </div>
 
+  <!-- Info content moved to modal -->
+
   <!-- UPLOAD CARD -->
   <div class="main-card">
-    <div class="card-tag">APK Scanner</div>
-    <div class="card-title">Upload Banking APK</div>
+    <div class="card-tag">Secure Scanner Active</div>
+    <div class="card-title">Analyze Banking APK</div>
     <div class="card-sub">
-      Upload any Android APK file. The system will parse it, extract permission and API-call features,
-      and run it through the trained ML model to determine if it's a legitimate banking app or a fake.
+      Drop your Android APK file to detect fake banking apps instantly. Our ML model extracts 241+ features 
+      using static analysis to identify malicious patterns with 97% accuracy.
     </div>
 
     <!-- Drop zone -->
@@ -436,8 +1723,8 @@
       <!-- Default state -->
       <div id="drop-default">
         <div class="drop-icon">📦</div>
-        <div class="drop-title">Drop your APK here</div>
-        <div class="drop-sub">or <span onclick="document.getElementById('file-input').click(); event.stopPropagation()">browse files</span> &nbsp;·&nbsp; .apk only · any size</div>
+        <div class="drop-title">Drop APK to Scan</div>
+        <div class="drop-sub">or <span onclick="document.getElementById('file-input').click(); event.stopPropagation()">browse files</span> · .apk only · any size</div>
       </div>
 
       <!-- File selected state -->
@@ -453,7 +1740,7 @@
 
     <!-- Scan button -->
     <button id="scan-btn" onclick="startScan()" disabled>
-      ⬡ &nbsp; SCAN APK
+      Start Security Analysis
     </button>
 
     <!-- Progress -->
@@ -510,15 +1797,12 @@
       <div class="perm-list" id="perm-list"></div>
 
       <!-- Scan again -->
-      <button id="scan-again" onclick="resetAll()">↺ &nbsp; SCAN ANOTHER APK</button>
+      <button id="scan-again" onclick="resetAll()">↺ Analyze Another APK</button>
     </div>
 
   </div><!-- /main-card -->
 
-  <footer>
-    <p>TUANDROMD · Tezpur University · IEEE 2020</p>
-    <span>XGBoost · SHAP · androguard</span>
-  </footer>
+  <!-- Footer removed - moved to Info modal -->
 </div>
 
 <div class="toast" id="toast"></div>
@@ -526,6 +1810,19 @@
 <script>
 // ── State ─────────────────────────────────────────
 let selectedFile = null;
+
+// ── Info Tabs ────────────────────────────────────
+document.querySelectorAll('.info-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active from all
+    document.querySelectorAll('.info-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.info-tab-panel').forEach(p => p.classList.remove('active'));
+    // Add active to clicked
+    btn.classList.add('active');
+    const tabId = btn.getAttribute('data-tab');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
 
 const DANGER_PERMS = new Set([
   'READ_SMS','SEND_SMS','RECEIVE_SMS','SYSTEM_ALERT_WINDOW',
@@ -697,12 +1994,21 @@ function renderResult(d) {
     d.top_reasons.forEach((r, i) => {
       const row = document.createElement('div');
       row.className = 'reason-row';
+      const isSus = r.direction === 'suspicious';
+      const impactPct = Math.min(Math.abs(r.impact) * 100, 50); // Scale for UI
+      
       row.innerHTML = `
         <span class="reason-feat">${r.feature}</span>
-        <span class="reason-val ${r.value ? 'on':'off'}">${r.value ? 'ON':'OFF'}</span>
-        <span class="reason-impact ${r.direction==='suspicious'?'sus':'safe'}">
-          ${r.direction==='suspicious'?'▲':'▼'} ${Math.abs(r.impact).toFixed(3)}
-        </span>`;
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="reason-val ${r.value ? 'on':'off'}" style="font-family:var(--mono); font-size:10px; padding:2px 6px; border-radius:4px; ${r.value ? 'background:rgba(0,255,136,0.1); color:var(--green);':'background:var(--surface3); color:var(--dim);'}">
+            ${r.value ? 'DETECTED':'ABSENT'}
+          </span>
+        </div>
+        <div class="impact-bar-wrap">
+          <div class="impact-center"></div>
+          <div class="impact-bar-fill ${isSus?'sus':'safe'}" style="width: ${impactPct}%"></div>
+        </div>
+      `;
       reasonsList.appendChild(row);
       setTimeout(() => row.classList.add('vis'), 80 + i * 80);
     });
@@ -747,6 +2053,270 @@ function showToast(msg, isErr = false) {
   t.className = 'toast' + (isErr ? ' err' : '') + ' show';
   setTimeout(() => t.className = 'toast' + (isErr?' err':''), 3500);
 }
+
+// ── Info Modal Functions ────────────────────────────
+function openInfoModal() {
+  const modal = document.getElementById('info-modal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeInfoModal() {
+  const modal = document.getElementById('info-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Close modal when clicking overlay
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('info-modal-overlay')) {
+    closeInfoModal();
+  }
+});
+
+// Info modal tabs - setup after DOM loaded
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.info-modal-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.info-modal-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.info-modal-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const tabId = btn.getAttribute('data-modal-tab');
+      const panel = document.getElementById('modal-' + tabId);
+      if (panel) panel.classList.add('active');
+    });
+  });
+});
 </script>
+
+<!-- INFO MODAL -->
+<div class="info-modal" id="info-modal">
+  <div class="info-modal-overlay" onclick="closeInfoModal()"></div>
+  <div class="info-modal-content">
+    <div class="info-modal-header">
+      <div class="info-modal-title">
+        <span>ℹ️</span>
+        <div>
+          <h2>About BankShield</h2>
+          <p>Technical details & project information</p>
+        </div>
+      </div>
+      <button class="info-modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+
+    <div class="info-modal-nav">
+      <button class="info-modal-tab-btn active" data-modal-tab="process">
+        <span>📋</span> Process
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="example">
+        <span>🔍</span> Example
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="dataset">
+        <span>📊</span> Dataset
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="model">
+        <span>🤖</span> Model
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="features">
+        <span>⚡</span> Features
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="deployment">
+        <span>🚀</span> Deployment
+      </button>
+      <button class="info-modal-tab-btn" data-modal-tab="builtwith">
+        <span>🛠️</span> Built With
+      </button>
+    </div>
+
+    <div class="info-modal-body">
+      <!-- Process Tab -->
+      <div class="info-modal-panel active" id="modal-process">
+        <h3>How It Works</h3>
+        <p>Three-step analysis pipeline powered by machine learning</p>
+        <div class="modal-steps">
+          <div class="modal-step">
+            <div class="modal-step-num">01</div>
+            <div class="modal-step-icon">📦</div>
+            <h4>Upload APK</h4>
+            <p>Drop any Android APK file. No size limits, no registration required.</p>
+          </div>
+          <div class="modal-step">
+            <div class="modal-step-num">02</div>
+            <div class="modal-step-icon">🔍</div>
+            <h4>Static Analysis</h4>
+            <p>androguard extracts 241 features: permissions, API calls, and metadata.</p>
+          </div>
+          <div class="modal-step">
+            <div class="modal-step-num">03</div>
+            <div class="modal-step-icon">🤖</div>
+            <h4>ML Prediction</h4>
+            <p>XGBoost classifier + SHAP explanations deliver verdict with confidence score.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example Tab -->
+      <div class="info-modal-panel" id="modal-example">
+        <h3>Sample Detection Result</h3>
+        <p>What you see after scanning a suspicious banking app</p>
+        <div class="modal-preview-card">
+          <div class="modal-preview-header">
+            <span class="modal-preview-badge malicious">🚨 MALICIOUS</span>
+            <span class="modal-preview-confidence">Confidence: 92%</span>
+          </div>
+          <div class="modal-preview-body">
+            <div class="modal-preview-meta">
+              <div><span>Package:</span> com.fakebank.app</div>
+              <div><span>Risk Level:</span> <span class="modal-risk-text critical">CRITICAL</span></div>
+            </div>
+            <div class="modal-preview-signals">
+              <div class="modal-signal-title">Top Risk Signals Detected:</div>
+              <div class="modal-signal-list">
+                <span class="modal-signal-chip">READ_SMS</span>
+                <span class="modal-signal-chip">SYSTEM_ALERT_WINDOW</span>
+                <span class="modal-signal-chip">BIND_ACCESSIBILITY_SERVICE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dataset Tab -->
+      <div class="info-modal-panel" id="modal-dataset">
+        <h3>TUANDROMD Dataset</h3>
+        <p>Tezpur University Android Malware Dataset from UCI ML Repository. 4,465 samples with 241 static features extracted from real APKs.</p>
+        <ul class="modal-list">
+          <li><strong>3,365</strong> malicious samples (75%)</li>
+          <li><strong>1,100</strong> benign samples (25%)</li>
+          <li>Binary feature vectors (permission/API present = 1)</li>
+          <li>IEEE 2020 publication by Borah & Bhattacharyya</li>
+        </ul>
+        <div class="modal-stats-row">
+          <div class="modal-stat">
+            <div class="modal-stat-num">4,465</div>
+            <div class="modal-stat-label">Total Samples</div>
+          </div>
+          <div class="modal-stat">
+            <div class="modal-stat-num">241</div>
+            <div class="modal-stat-label">Features</div>
+          </div>
+          <div class="modal-stat">
+            <div class="modal-stat-num">75/25</div>
+            <div class="modal-stat-label">Malware/Benign</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model Tab -->
+      <div class="info-modal-panel" id="modal-model">
+        <h3>XGBoost Classifier</h3>
+        <p>Gradient boosting ensemble optimized for malware detection with class imbalance handling via SMOTE.</p>
+        <ul class="modal-list">
+          <li><strong>Algorithm:</strong> XGBoost 2.0 with 500 estimators</li>
+          <li><strong>Learning Rate:</strong> 0.05 with early stopping</li>
+          <li><strong>Features:</strong> Top 50 via Random Forest selection</li>
+          <li><strong>Validation:</strong> 80/20 stratified split, 5-fold CV</li>
+        </ul>
+        <div class="modal-metrics">
+          <div class="modal-metric-row">
+            <span>Accuracy</span>
+            <div class="modal-metric-bar"><div class="modal-metric-fill" style="width:97%"></div></div>
+            <span class="modal-metric-val">97%</span>
+          </div>
+          <div class="modal-metric-row">
+            <span>F1-Score</span>
+            <div class="modal-metric-bar"><div class="modal-metric-fill" style="width:96%"></div></div>
+            <span class="modal-metric-val">0.96</span>
+          </div>
+          <div class="modal-metric-row">
+            <span>AUC-ROC</span>
+            <div class="modal-metric-bar"><div class="modal-metric-fill" style="width:99%"></div></div>
+            <span class="modal-metric-val">0.99</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Tab -->
+      <div class="info-modal-panel" id="modal-features">
+        <h3>Top Detection Features</h3>
+        <p>SHAP analysis reveals which permissions and APIs most strongly predict malicious behavior in fake banking apps.</p>
+        <div class="modal-features-list">
+          <div class="modal-feature-item high">
+            <span class="modal-feature-rank">1</span>
+            <span class="modal-feature-name">READ_SMS</span>
+            <span class="modal-feature-desc">Reads SMS messages for OTP theft</span>
+          </div>
+          <div class="modal-feature-item high">
+            <span class="modal-feature-rank">2</span>
+            <span class="modal-feature-name">SYSTEM_ALERT_WINDOW</span>
+            <span class="modal-feature-desc">Draws overlay phishing screens</span>
+          </div>
+          <div class="modal-feature-item high">
+            <span class="modal-feature-rank">3</span>
+            <span class="modal-feature-name">BIND_ACCESSIBILITY_SERVICE</span>
+            <span class="modal-feature-desc">Monitors user interactions</span>
+          </div>
+          <div class="modal-feature-item med">
+            <span class="modal-feature-rank">4</span>
+            <span class="modal-feature-name">RECEIVE_BOOT_COMPLETED</span>
+            <span class="modal-feature-desc">Auto-starts on device boot</span>
+          </div>
+          <div class="modal-feature-item med">
+            <span class="modal-feature-rank">5</span>
+            <span class="modal-feature-name">SEND_SMS</span>
+            <span class="modal-feature-desc">Sends premium SMS silently</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deployment Tab -->
+      <div class="info-modal-panel" id="modal-deployment">
+        <h3>Production Architecture</h3>
+        <p>Containerized Flask app deployed on Hugging Face Spaces with models versioned on HF Hub.</p>
+        <ul class="modal-list">
+          <li><strong>API:</strong> Flask 3.0 with Gunicorn</li>
+          <li><strong>Container:</strong> Docker (Python 3.10-slim)</li>
+          <li><strong>Hosting:</strong> Hugging Face Spaces</li>
+          <li><strong>Models:</strong> HF Hub auto-download at startup</li>
+        </ul>
+        <div class="modal-deploy-flow">
+          <div class="modal-deploy-step">
+            <div class="modal-deploy-icon">📦</div>
+            <div class="modal-deploy-text">APK Upload</div>
+          </div>
+          <div class="modal-deploy-arrow">→</div>
+          <div class="modal-deploy-step">
+            <div class="modal-deploy-icon">⚡</div>
+            <div class="modal-deploy-text">Analysis</div>
+          </div>
+          <div class="modal-deploy-arrow">→</div>
+          <div class="modal-deploy-step">
+            <div class="modal-deploy-icon">✅</div>
+            <div class="modal-deploy-text">Result</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Built With Tab -->
+      <div class="info-modal-panel" id="modal-builtwith">
+        <h3>Technology Stack</h3>
+        <p>Tools and frameworks used to build BankShield</p>
+        <div class="modal-stack-grid">
+          <div class="modal-stack-item"><span class="modal-stack-icon">🐍</span>Python 3.10</div>
+          <div class="modal-stack-item"><span class="modal-stack-icon">⚡</span>Flask 3.0</div>
+          <div class="modal-stack-item"><span class="modal-stack-icon">🌲</span>XGBoost 2.0</div>
+          <div class="modal-stack-item"><span class="modal-stack-icon">📊</span>SHAP 0.43</div>
+          <div class="modal-stack-item"><span class="modal-stack-icon">🤖</span>androguard 4.1</div>
+          <div class="modal-stack-item"><span class="modal-stack-icon">🐳</span>Docker</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

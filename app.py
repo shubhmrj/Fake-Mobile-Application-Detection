@@ -38,7 +38,7 @@ def download_models():
     for filename in files:
         dest = os.path.join(models_dir, filename)
         url  = f"{BASE_URL}/{filename}"
-        print(f"⬇  Downloading {filename}...")
+        print(f"  Downloading {filename}...")
         try:
             r = requests.get(url, headers=headers, timeout=180)
             print(f"   HTTP {r.status_code}")
@@ -70,7 +70,7 @@ try:
     print(f"   Features: {len(top_features)}")
     print(f"   numpy version: {np.__version__}")
 except Exception as e:
-    print(f"❌ Model load failed: {e}")
+    print(f" Model load failed: {e}")
     print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
     print(f"   numpy version: {np.__version__}")
     model = top_features = scaler = label_encoder = None
@@ -185,5 +185,4 @@ def get_features():
 
 
 if __name__ == '__main__':
-    print("🛡️  BankShield running at http://0.0.0.0:7860")
     app.run(host='0.0.0.0', port=7860, debug=False)
