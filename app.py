@@ -139,6 +139,14 @@ def scan_apk():
             supported_types = ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 
                               'RandomForestClassifier', 'Pipeline', 'GridSearchCV', 'RandomizedSearchCV']
             if model_type in supported_types or hasattr(model, 'predict_proba'):
+                # Fix XGBoost base_score string bug (version mismatch)
+                if hasattr(model, 'base_score') and model.base_score is not None:
+                    try:
+                        float(model.base_score)
+                    except (ValueError, TypeError):
+                        # base_score is a malformed string, reset to default
+                        print(f"DEBUG: Fixing base_score from {model.base_score} to 0.5")
+                        model.base_score = 0.5
                 exp = shap.TreeExplainer(model)
                 sv = exp.shap_values(row)[0]
                 impact = pd.Series(sv, index=top_features)
