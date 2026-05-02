@@ -7,87 +7,15 @@ import os
 import traceback
 import tempfile
 import logging
-import re
-from datetime import datetime
-from threading import Lock
 
 from apk_extractor import extract_features
+from logging_capture import setup_logging_capture, clear_logs, get_logs
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = None
 
-# ── Real-time Log Capture ────────────────────────
-scan_logs = []  # Global list to store logs during scan
-scan_logs_lock = Lock()
-current_scan_id = None
-
-class CaptureHandler(logging.Handler):
-    """Custom handler to capture logs for streaming to frontend"""
-    def __init__(self):
-        super().__init__()
-        self.setLevel(logging.DEBUG)
-
-    def emit(self, record):
-        global scan_logs
-        # Parse log format to extract components
-        msg = self.format(record)
-
-        # Try to extract module, function, line from the message
-        # Format: module.func:line - message
-        match = re.match(r'(\S+?):(\S+?):(\d+)\s+-\s+(.+)', msg)
-        if match:
-            module, func, line, message = match.groups()
-        else:
-            # Fallback: use record's info
-            module = record.name
-            func = record.funcName
-            line = str(record.lineno)
-            message = record.getMessage()
-
-        log_entry = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3],
-            'level': record.levelname,
-            'module': module,
-            'function': func,
-            'line': line,
-            'message': message
-        }
-
-        with scan_logs_lock:
-            scan_logs.append(log_entry)
-            # Keep only last 500 logs to prevent memory bloat
-            if len(scan_logs) > 500:
-                scan_logs = scan_logs[-500:]
-
-# Setup capture handler
-capture_handler = CaptureHandler()
-capture_handler.setFormatter(logging.Formatter('%(name)s:%(funcName)s:%(lineno)s - %(message)s'))
-
-# Attach to androguard loggers
-androguard_loggers = [
-    logging.getLogger('androguard'),
-    logging.getLogger('androguard.core'),
-    logging.getLogger('androguard.core.analysis'),
-    logging.getLogger('androguard.core.analysis.analysis'),
-    logging.getLogger('androguard.core.bytecodes'),
-    logging.getLogger('androguard.core.bytecodes.apk'),
-    logging.getLogger('androguard.core.bytecodes.dvm'),
-    logging.getLogger('apk_extractor'),
-]
-
-for logger in androguard_loggers:
-    logger.addHandler(capture_handler)
-    logger.setLevel(logging.DEBUG)
-
-# Also capture our app logs
-logging.getLogger().addHandler(capture_handler)
-
-def clear_logs():
-    """Clear logs at start of new scan"""
-    global scan_logs, current_scan_id
-    with scan_logs_lock:
-        scan_logs = []
-    current_scan_id = datetime.now().strftime('%Y%m%d%H%M%S')
+# ── Setup Real-time Log Capture ──────────────────
+setup_logging_capture()
 
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
@@ -161,7 +89,7 @@ def index():
 
 @app.route('/scan', methods=['POST'])
 def scan_apk():
-    global current_scan_id
+    from logging_capture import current_scan_id
 
     if model is None:
         return jsonify({'success': False,
@@ -267,23 +195,16 @@ def get_features():
 
 
 @app.route('/logs', methods=['GET'])
-def get_logs():
+def logs_endpoint():
     """Return captured logs for the developer console"""
     since = request.args.get('since', 0, type=int)
-    with scan_logs_lock:
-        # Return logs after the given index
-        if since < len(scan_logs):
-            return jsonify({
-                'logs': scan_logs[since:],
-                'total': len(scan_logs),
-                'scan_id': current_scan_id
-            })
-        return jsonify({'logs': [], 'total': len(scan_logs), 'scan_id': current_scan_id})
+    return jsonify(get_logs(since))
 
 
 @app.route('/logs/clear', methods=['POST'])
 def clear_logs_endpoint():
     """Clear logs - call at start of new scan"""
+    from logging_capture import current_scan_id
     clear_logs()
     return jsonify({'success': True, 'scan_id': current_scan_id})
 
