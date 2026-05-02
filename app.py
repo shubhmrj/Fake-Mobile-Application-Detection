@@ -1,23 +1,23 @@
+import os
+import logging
+import traceback
+import tempfile
+
 from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
 import numpy as np
 import shap
-import os
-import traceback
-import tempfile
-import logging
 
 from apk_extractor import extract_features
-from logging_capture import setup_logging_capture, clear_logs, get_logs
+from logging_capture import setup_logging_capture, clear_logs, get_logs, current_scan_id
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = None
 
-# ── Setup Real-time Log Capture ──────────────────
+#  call the console log for realtime shown on frontend
 setup_logging_capture()
 
-BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = tempfile.gettempdir()
 
 
@@ -61,25 +61,22 @@ def download_models():
 download_models()
 
 
-MODEL_PATH    = "/app/models/best_model.pkl"
-FEATURES_PATH = "/app/models/top_features.pkl"
-SCALER_PATH   = "/app/models/scaler.pkl"
-LE_PATH       = "/app/models/label_encoder.pkl"
+MODELS_DIR    = "/app/models"
+MODEL_PATH    = os.path.join(MODELS_DIR, "best_model.pkl")
+FEATURES_PATH = os.path.join(MODELS_DIR, "top_features.pkl")
 
-try:
-    model         = joblib.load(MODEL_PATH)
-    top_features  = joblib.load(FEATURES_PATH)
-    scaler        = joblib.load(SCALER_PATH)
-    label_encoder = joblib.load(LE_PATH)
-    print(f"✅ Model loaded: {type(model).__name__}")
-    print(f"   Features: {len(top_features)}")
-    print(f"   numpy version: {np.__version__}")
-except Exception as e:
-    print(f" Model load failed: {e}")
-    print(f"   MODEL_PATH exists: {os.path.exists(MODEL_PATH)}")
-    print(f"   numpy version: {np.__version__}")
-    model = top_features = scaler = label_encoder = None
+def load_model():
+    """Load ML model and features"""
+    try:
+        model = joblib.load(MODEL_PATH)
+        top_features = joblib.load(FEATURES_PATH)
+        print(f"Model loaded: {type(model).__name__} | Features: {len(top_features)}")
+        return model, top_features
+    except Exception as e:
+        print(f"Model load failed: {e}")
+        return None, None
 
+model, top_features = load_model()
 
 
 @app.route('/')
@@ -89,8 +86,6 @@ def index():
 
 @app.route('/scan', methods=['POST'])
 def scan_apk():
-    from logging_capture import current_scan_id
-
     if model is None:
         return jsonify({'success': False,
                         'error': 'Model not loaded. Check server logs.'}), 500
@@ -103,7 +98,7 @@ def scan_apk():
     if not file.filename.lower().endswith('.apk'):
         return jsonify({'success': False, 'error': 'File must be .apk'}), 400
 
-    # Clear logs at start of scan
+    # for new scan clean the logs
     clear_logs()
     logging.info(f"Starting scan for: {file.filename}")
 
@@ -134,19 +129,20 @@ def scan_apk():
         prob       = model.predict_proba(row)[0]
         confidence = float(prob[1])
 
+        # SHAP explanations
         top_reasons = []
         try:
-            from xgboost import XGBClassifier
-            if isinstance(model, XGBClassifier):
+            model_type = type(model).__name__
+            if model_type in ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 'RandomForestClassifier']:
                 exp = shap.TreeExplainer(model)
-                sv  = exp.shap_values(row)[0]
+                sv = exp.shap_values(row)[0]
                 impact = pd.Series(sv, index=top_features)
                 for feat in impact.abs().nlargest(5).index:
                     top_reasons.append({
-                        'feature':   feat,
-                        'value':     int(row[feat].values[0]),
+                        'feature': feat,
+                        'value': int(row[feat].values[0]),
                         'direction': 'suspicious' if impact[feat] > 0 else 'safe',
-                        'impact':    round(float(impact[feat]), 4)
+                        'impact': round(float(impact[feat]), 4)
                     })
         except Exception as se:
             print(f"SHAP skipped: {se}")
@@ -196,19 +192,14 @@ def get_features():
 
 @app.route('/logs', methods=['GET'])
 def logs_endpoint():
-    """Return captured logs for the developer console"""
     since = request.args.get('since', 0, type=int)
     return jsonify(get_logs(since))
 
 
 @app.route('/logs/clear', methods=['POST'])
 def clear_logs_endpoint():
-    """Clear logs - call at start of new scan"""
-    from logging_capture import current_scan_id
     clear_logs()
     return jsonify({'success': True, 'scan_id': current_scan_id})
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860, debug=False)

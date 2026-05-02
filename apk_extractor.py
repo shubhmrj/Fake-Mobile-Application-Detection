@@ -1,38 +1,40 @@
+"""APK Feature Extractor for BankShield
+Extracts static features from Android APKs using androguard
+"""
+
 import os
 import hashlib
 import logging
+from androguard.misc import AnalyzeAPK
+from androguard.core.apk import APK
 
 logger = logging.getLogger(__name__)
 
+
 def extract_features(apk_path: str, top_features: list) -> tuple:
+    """Extract features from APK for ML classification"""
     logger.info("Starting APK analysis...")
 
-    try:
-        from androguard.misc import AnalyzeAPK
-    except ImportError:
-        raise ImportError("androguard not installed. Run: pip install androguard")
-
-    a    = None
-    d    = None
-    dx   = None
+    a = None
+    d = None
+    dx = None
 
     # Try full analysis first
     try:
-        logger.debug("androguard.core.analysis.analysis:AnalyzeAPK:19 - Loading APK file...")
+        logger.debug("androguard:AnalyzeAPK - Loading APK file...")
         a, d, dx = AnalyzeAPK(apk_path)
-        logger.info(f"androguard.core.bytecodes.apk:get_permissions:24 - APK loaded successfully")
+        logger.info("androguard:APK loaded successfully")
     except Exception as e1:
         logger.warning(f"Full analysis failed ({e1}), trying APK-only parse...")
         try:
-            from androguard.core.apk import APK
-            logger.debug("androguard.core.bytecodes.apk:APK:32 - Falling back to APK-only parsing")
+            logger.debug("androguard:APK - Falling back to APK-only parsing")
             a = APK(apk_path)
-            logger.info("androguard.core.bytecodes.apk:APK:34 - APK-only parse successful")
+            logger.info("androguard:APK-only parse successful")
         except Exception as e2:
             logger.error(f"Cannot parse APK: {e2}")
             raise Exception(f"Cannot parse APK: {e2}")
 
-    # ── Safe extractions ─────────────────────────
+    # Safe extraction helper
     def safe(fn, default):
         try:
             res = fn()
@@ -40,7 +42,7 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
         except Exception:
             return default
 
-    logger.debug("androguard.core.bytecodes.apk:extract:36 - Extracting APK metadata...")
+    logger.debug("androguard:Extracting APK metadata...")
     permissions  = safe(lambda: set(a.get_permissions()), set())
     activities   = safe(lambda: a.get_activities(), [])
     services     = safe(lambda: a.get_services(), [])
@@ -92,30 +94,31 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
     logger.info(f"apk_extractor:extract_features:84 - Feature vector complete: {matched_count}/{len(top_features)} features matched")
 
     # ── Metadata ─────────────────────────────────
-    logger.debug("apk_extractor:extract_features:88 - Compiling metadata...")
+    # Build metadata
+    logger.debug("apk_extractor:Compiling metadata...")
     meta = {
-        "apk_name":        os.path.basename(apk_path),
-        "package_name":    package_name,
-        "app_name":        app_name or "Unknown",
-        "min_sdk":         str(min_sdk) if min_sdk else "?",
-        "target_sdk":      str(target_sdk) if target_sdk else "?",
-        "analysis_type":   "full" if dx is not None else "partial",
-        "permissions":     sorted(list(permissions)),
+        "apk_name": os.path.basename(apk_path),
+        "package_name": package_name,
+        "app_name": app_name or "Unknown",
+        "min_sdk": str(min_sdk) if min_sdk else "?",
+        "target_sdk": str(target_sdk) if target_sdk else "?",
+        "permissions": sorted(list(permissions)),
         "num_permissions": len(permissions),
-        "num_activities":  len(activities),
-        "num_services":    len(services),
-        "num_receivers":   len(receivers),
-        "file_size_kb":    round(os.path.getsize(apk_path) / 1024, 1),
-        "md5":             _md5(apk_path),
+        "num_activities": len(activities),
+        "num_services": len(services),
+        "num_receivers": len(receivers),
+        "file_size_kb": round(os.path.getsize(apk_path) / 1024, 1),
+        "md5": _md5(apk_path),
         "active_features": sum(feature_vector.values()),
-        "total_features":  len(feature_vector),
-        "risk_signals":    _get_risk_signals(norm_perms, api_calls),
+        "total_features": len(feature_vector),
+        "risk_signals": _get_risk_signals(norm_perms, api_calls),
     }
 
     return feature_vector, meta
 
 
 def _md5(path: str) -> str:
+    """Calculate MD5 hash of file"""
     h = hashlib.md5()
     with open(path, 'rb') as f:
         for chunk in iter(lambda: f.read(8192), b''):
@@ -124,6 +127,7 @@ def _md5(path: str) -> str:
 
 
 def _get_risk_signals(permissions: set, api_calls: set) -> list:
+    """Identify high-risk permissions and API calls"""
     HIGH_RISK_PERMS = [
         'READ_SMS', 'SEND_SMS', 'RECEIVE_SMS',
         'SYSTEM_ALERT_WINDOW', 'BIND_ACCESSIBILITY_SERVICE',
