@@ -2057,7 +2057,7 @@
 
       <!-- File selected state -->
       <div class="file-selected" id="file-selected">
-        <div class="file-icon-wrap">📱</div>
+        <div class="file-icon-wrap"></div>
         <div class="file-info">
           <h3 id="file-name">—</h3>
           <p id="file-size">—</p>
@@ -2281,9 +2281,9 @@ async function startScan() {
 
   activateStep(0);
 
-  // Start androguard developer console logs
+  // Start polling real logs from backend
   if (!devConsoleOpen) toggleDevConsole();
-  simulateAndroguardLogs();
+  startLogPolling();
 
   // Simulate intermediate steps visually with terminal logs
   const delays = [400, 1000, 1600, 2200, 2800];
@@ -2313,6 +2313,8 @@ async function startScan() {
       addLogEntry('Analysis failed: ' + data.error, 'error');
     }
 
+    stopLogPolling();
+
     await new Promise(r => setTimeout(r, 600));
     document.getElementById('progress-section').style.display = 'none';
     document.getElementById('scan-btn').disabled = false;
@@ -2326,6 +2328,7 @@ async function startScan() {
 
   } catch(err) {
     addLogEntry('Server connection failed. Is Flask running?', 'error');
+    stopLogPolling();
     showToast('Server error — is Flask running?', true);
     document.getElementById('progress-section').style.display = 'none';
     document.getElementById('scan-btn').disabled = false;
@@ -2602,6 +2605,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Developer Console Functions ───────────────────
 let devConsoleOpen = false;
 let devConsoleLogs = [];
+let logsPollInterval = null;
+let logsLastIndex = 0;
+let currentScanId = null;
 
 function toggleDevConsole() {
   const panel = document.getElementById('devConsolePanel');
@@ -2655,6 +2661,7 @@ function clearDevConsole() {
     </div>
   `;
   devConsoleLogs = [];
+  logsLastIndex = 0;
 }
 
 function setDevConsoleStatus(active) {
@@ -2666,55 +2673,58 @@ function setDevConsoleStatus(active) {
   }
 }
 
-// Simulate androguard analysis logs during scan
-function simulateAndroguardLogs() {
-  const logs = [
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '501', msg: 'Parsing exceptions' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '508', msg: 'Creating basic blocks' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '536', msg: 'Settings basic blocks childs' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '543', msg: 'Creating exceptions' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: '__init__', line: '382', msg: 'Adding new method Landroidx/core/transition/TransitionKt$doOnEnd$inlined$addListener$default$1; onTransitionResume' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '490', msg: 'Parsing instructions for method at @0x001f3838' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '501', msg: 'Parsing exceptions' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '508', msg: 'Creating basic blocks' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '536', msg: 'Settings basic blocks childs' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '543', msg: 'Creating exceptions' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: '__init__', line: '382', msg: 'Adding new method Landroidx/core/transition/TransitionKt$doOnEnd$inlined$addListener$default$1; onTransitionStart' },
-    { level: 'INFO', module: 'androguard.core.bytecodes.apk', func: 'parse_apk', line: '245', msg: 'Parsing APK manifest...' },
-    { level: 'INFO', module: 'androguard.core.bytecodes.apk', func: 'get_permissions', line: '312', msg: 'Found 24 permissions' },
-    { level: 'INFO', module: 'androguard.core.bytecodes.dvm', func: 'get_strings', line: '188', msg: 'Extracting string constants...' },
-    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'analyze', line: '420', msg: 'Building call graph...' },
-    { level: 'INFO', module: 'apk_extractor', func: 'extract_features', line: '156', msg: 'Feature extraction complete - 241 features extracted' },
-    { level: 'DEBUG', module: 'sklearn.preprocessing', func: 'transform', line: '890', msg: 'Scaling feature vector...' },
-    { level: 'INFO', module: 'xgboost.core', func: 'predict', line: '445', msg: 'Running inference on 50 top features' },
-    { level: 'DEBUG', module: 'shap.explainers', func: '__call__', line: '234', msg: 'Computing SHAP values...' },
-    { level: 'INFO', module: 'app', func: 'scan', line: '178', msg: 'Analysis pipeline complete' }
-  ];
+// Poll real logs from backend
+async function fetchLogs() {
+  try {
+    const res = await fetch(`/logs?since=${logsLastIndex}`);
+    const data = await res.json();
 
-  let index = 0;
-  setDevConsoleStatus(true);
-
-  function addNextLog() {
-    if (index >= logs.length) {
-      setDevConsoleStatus(false);
-      return;
+    if (data.logs && data.logs.length > 0) {
+      data.logs.forEach(log => {
+        addDevConsoleLog(
+          log.timestamp,
+          log.level,
+          log.module,
+          log.function,
+          log.line,
+          log.message
+        );
+      });
+      logsLastIndex = data.total;
     }
 
-    const log = logs[index];
-    const now = new Date();
-    const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+    // Check if scan is complete (no new logs for a while)
+    if (data.logs.length === 0 && logsLastIndex > 0) {
+      // Could add logic to stop polling here if scan is done
+    }
+  } catch (err) {
+    console.error('Failed to fetch logs:', err);
+  }
+}
 
-    addDevConsoleLog(ts, log.level, log.module, log.func, log.line, log.msg);
-    index++;
-
-    // Random delay between 50-200ms for realistic feel
-    const delay = Math.random() * 150 + 50;
-    setTimeout(addNextLog, delay);
+function startLogPolling() {
+  // Clear any existing interval
+  if (logsPollInterval) {
+    clearInterval(logsPollInterval);
   }
 
-  // Clear previous logs and start
+  // Clear logs and reset index
   clearDevConsole();
-  addNextLog();
+  logsLastIndex = 0;
+  setDevConsoleStatus(true);
+
+  // Start polling every 200ms
+  logsPollInterval = setInterval(fetchLogs, 200);
+}
+
+function stopLogPolling() {
+  if (logsPollInterval) {
+    clearInterval(logsPollInterval);
+    logsPollInterval = null;
+  }
+  setDevConsoleStatus(false);
+  // One final fetch to get any remaining logs
+  fetchLogs();
 }
 </script>
 

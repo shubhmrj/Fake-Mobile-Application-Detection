@@ -5,6 +5,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def extract_features(apk_path: str, top_features: list) -> tuple:
+    logger.info("Starting APK analysis...")
+
     try:
         from androguard.misc import AnalyzeAPK
     except ImportError:
@@ -16,13 +18,18 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
 
     # Try full analysis first
     try:
+        logger.debug("androguard.core.analysis.analysis:AnalyzeAPK:19 - Loading APK file...")
         a, d, dx = AnalyzeAPK(apk_path)
+        logger.info(f"androguard.core.bytecodes.apk:get_permissions:24 - APK loaded successfully")
     except Exception as e1:
         logger.warning(f"Full analysis failed ({e1}), trying APK-only parse...")
         try:
             from androguard.core.apk import APK
+            logger.debug("androguard.core.bytecodes.apk:APK:32 - Falling back to APK-only parsing")
             a = APK(apk_path)
+            logger.info("androguard.core.bytecodes.apk:APK:34 - APK-only parse successful")
         except Exception as e2:
+            logger.error(f"Cannot parse APK: {e2}")
             raise Exception(f"Cannot parse APK: {e2}")
 
     # ── Safe extractions ─────────────────────────
@@ -33,6 +40,7 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
         except Exception:
             return default
 
+    logger.debug("androguard.core.bytecodes.apk:extract:36 - Extracting APK metadata...")
     permissions  = safe(lambda: set(a.get_permissions()), set())
     activities   = safe(lambda: a.get_activities(), [])
     services     = safe(lambda: a.get_services(), [])
@@ -41,6 +49,7 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
     app_name     = safe(lambda: a.get_app_name(), "Unknown")
     min_sdk      = safe(lambda: a.get_min_sdk_version(), "?")
     target_sdk   = safe(lambda: a.get_target_sdk_version(), "?")
+    logger.info(f"androguard.core.bytecodes.apk:get_permissions:45 - Found {len(permissions)} permissions")
 
     # Normalized permission names for matching
     norm_perms = set()
@@ -52,15 +61,23 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
     # ── API calls ────────────────────────────────
     api_calls = set()
     if dx is not None:
+        logger.debug("androguard.core.analysis.analysis:analyze:52 - Building call graph for API extraction...")
         try:
+            method_count = 0
+            call_count = 0
             for method in dx.get_methods():
+                method_count += 1
                 for _, call, _ in method.get_xref_to():
                     api_calls.add(f"{call.get_class_name()}->{call.get_name()}")
+                    call_count += 1
+            logger.info(f"androguard.core.analysis.analysis:analyze:62 - Analyzed {method_count} methods, found {len(api_calls)} unique API calls")
         except Exception as e:
-            logger.debug(f"API call extraction partial failure: {e}")
+            logger.debug(f"androguard.core.analysis.analysis:analyze:64 - API call extraction partial failure: {e}")
 
     # ── Feature vector ───────────────────────────
+    logger.debug("apk_extractor:extract_features:71 - Building feature vector from top features...")
     feature_vector = {}
+    matched_count = 0
     for feat in top_features:
         feat_upper = feat.upper()
         # Check if the feature (permission or API) matches
@@ -70,14 +87,19 @@ def extract_features(apk_path: str, top_features: list) -> tuple:
             or any(feat_upper in call.upper() for call in api_calls)
         )
         feature_vector[feat] = 1 if matched else 0
+        if matched:
+            matched_count += 1
+    logger.info(f"apk_extractor:extract_features:84 - Feature vector complete: {matched_count}/{len(top_features)} features matched")
 
     # ── Metadata ─────────────────────────────────
+    logger.debug("apk_extractor:extract_features:88 - Compiling metadata...")
     meta = {
         "apk_name":        os.path.basename(apk_path),
         "package_name":    package_name,
         "app_name":        app_name or "Unknown",
         "min_sdk":         str(min_sdk) if min_sdk else "?",
         "target_sdk":      str(target_sdk) if target_sdk else "?",
+        "analysis_type":   "full" if dx is not None else "partial",
         "permissions":     sorted(list(permissions)),
         "num_permissions": len(permissions),
         "num_activities":  len(activities),
