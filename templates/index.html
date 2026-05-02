@@ -547,6 +547,61 @@
       border-radius: 3px;
       transition: width 0.4s ease;
     }
+
+    /* Terminal-style progress log */
+    .terminal-log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+    .terminal-log::-webkit-scrollbar {
+      width: 6px;
+    }
+    .terminal-log::-webkit-scrollbar-thumb {
+      background: var(--dim);
+      border-radius: 3px;
+    }
+    .log-entry {
+      display: flex;
+      gap: 12px;
+      padding: 4px 0;
+      opacity: 0;
+      animation: logFadeIn 0.3s ease forwards;
+    }
+    @keyframes logFadeIn {
+      to { opacity: 1; }
+    }
+    .log-time {
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+    .log-msg {
+      color: var(--text);
+    }
+    .log-msg.success { color: var(--green); }
+    .log-msg.warning { color: var(--amber); }
+    .log-msg.error { color: var(--red); }
+    .log-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--green);
+      margin-left: 4px;
+      animation: cursorBlink 1s infinite;
+      vertical-align: middle;
+    }
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Progress steps (legacy) */
     .progress-steps { display: flex; flex-direction: column; gap: 8px; }
     .step-row {
       display: flex; align-items: center; gap: 12px;
@@ -689,6 +744,85 @@
     .perm-chip.danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,59,92,.3); }
     .perm-chip.normal { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); }
 
+    /* ── Export Buttons ───────────────────── */
+    .export-section {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+      padding: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+    @media(max-width:640px){
+      .export-section {
+        flex-direction: column;
+      }
+    }
+    .export-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .export-btn:hover {
+      border-color: var(--green);
+      background: var(--green-dim);
+      transform: translateY(-2px);
+    }
+    .export-btn.json:hover {
+      border-color: var(--blue);
+      background: rgba(76, 201, 240, 0.1);
+    }
+    .export-btn.pdf:hover {
+      border-color: var(--red);
+      background: rgba(255, 59, 92, 0.1);
+    }
+
+    /* ── Copy Buttons ─────────────────────── */
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: 8px;
+    }
+    .copy-btn:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+    .copy-btn.copied {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+    .meta-val-wrapper {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
     /* scan-again btn */
     #scan-again {
       display: block;
@@ -725,6 +859,15 @@
     }
     #scan-again:hover::before {
       opacity: 1;
+    }
+
+    /* ── Animated Counter ───────────────── */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-count {
+      animation: countUp 0.5s ease forwards;
     }
 
     /* ── How It Works Section ───────────── */
@@ -1597,6 +1740,191 @@
       margin-bottom: 8px;
     }
 
+    /* ── Developer Console Panel ────────── */
+    .dev-console-toggle {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 100;
+      padding: 10px 14px;
+      font-family: 'SF Mono', Monaco, 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #8b949e;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .dev-console-toggle:hover {
+      background: #30363d;
+      border-color: #58a6ff;
+      color: #58a6ff;
+    }
+    .dev-console-toggle.active {
+      background: #238636;
+      border-color: #3fb950;
+      color: #fff;
+    }
+    .dev-console-panel {
+      position: fixed;
+      right: 20px;
+      top: 80px;
+      bottom: 20px;
+      width: 600px;
+      max-width: calc(100vw - 40px);
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      z-index: 99;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    }
+    .dev-console-panel.active {
+      display: flex;
+    }
+    @media(max-width: 1300px){
+      .dev-console-panel {
+        width: 500px;
+      }
+    }
+    @media(max-width: 1100px){
+      .dev-console-panel {
+        width: calc(100vw - 40px);
+        left: 20px;
+        right: 20px;
+      }
+    }
+    .dev-console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      flex-shrink: 0;
+    }
+    .dev-console-title {
+      font-family: 'SF Mono', Monaco, 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: #c9d1d9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .dev-console-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6e7681;
+    }
+    .dev-console-status.active {
+      background: #3fb950;
+      box-shadow: 0 0 10px #3fb950;
+      animation: pulse-dot 1.5s infinite;
+    }
+    .dev-console-close {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: #8b949e;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    .dev-console-close:hover {
+      background: #f85149;
+      color: #fff;
+    }
+    .dev-console-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 0;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      background: #0d1117;
+    }
+    .dev-console-body::-webkit-scrollbar {
+      width: 8px;
+    }
+    .dev-console-body::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 4px;
+    }
+    .console-line {
+      display: grid;
+      grid-template-columns: 155px 50px 1fr;
+      gap: 8px;
+      padding: 1px 12px;
+      opacity: 0;
+      animation: logFadeIn 0.1s ease forwards;
+      white-space: nowrap;
+    }
+    .console-timestamp {
+      color: #6e7681;
+      font-size: 11px;
+    }
+    .console-level {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .console-level.DEBUG { color: #58a6ff; }
+    .console-level.INFO { color: #3fb950; }
+    .console-level.WARN { color: #d29922; }
+    .console-level.ERROR { color: #f85149; }
+    .console-content {
+      color: #c9d1d9;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .console-module {
+      color: #8b949e;
+    }
+    .console-func {
+      color: #d2a8ff;
+    }
+    .console-line-num {
+      color: #8b949e;
+    }
+    .console-sep {
+      color: #6e7681;
+    }
+    .console-msg {
+      color: #c9d1d9;
+    }
+    .console-prompt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 12px;
+      padding: 8px 0;
+      border-top: 1px solid #30363d;
+      color: #6e7681;
+      font-size: 11px;
+    }
+    .console-cursor {
+      width: 8px;
+      height: 14px;
+      background: #3fb950;
+      animation: cursorBlink 1s infinite;
+    }
+
     /* ── Footer ─────────────────────────── */
     .enhanced-footer {
       margin-top: 64px;
@@ -1722,7 +2050,7 @@
 
       <!-- Default state -->
       <div id="drop-default">
-        <div class="drop-icon">📦</div>
+        <div class="drop-icon"></div>
         <div class="drop-title">Drop APK to Scan</div>
         <div class="drop-sub">or <span onclick="document.getElementById('file-input').click(); event.stopPropagation()">browse files</span> · .apk only · any size</div>
       </div>
@@ -1746,16 +2074,16 @@
     <!-- Progress -->
     <div id="progress-section">
       <div class="progress-label">
-        <span id="progress-step-label">Uploading...</span>
+        <span id="progress-step-label">Initializing security scan...</span>
         <span id="progress-pct">0%</span>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="progress-steps" id="progress-steps">
-        <div class="step-row" id="step-upload"><div class="step-dot"></div>Uploading APK to server</div>
-        <div class="step-row" id="step-parse"><div class="step-dot"></div>Parsing APK (androguard)</div>
-        <div class="step-row" id="step-extract"><div class="step-dot"></div>Extracting features (permissions, API calls)</div>
-        <div class="step-row" id="step-predict"><div class="step-dot"></div>Running ML model prediction</div>
-        <div class="step-row" id="step-shap"><div class="step-dot"></div>Computing SHAP explanations</div>
+      <!-- Terminal Log -->
+      <div class="terminal-log" id="terminal-log">
+        <div class="log-entry">
+          <span class="log-time">[--:--:--]</span>
+          <span class="log-msg">Waiting for APK upload...<span class="log-cursor"></span></span>
+        </div>
       </div>
     </div>
 
@@ -1795,6 +2123,16 @@
       <!-- Permissions found -->
       <div class="section-label" style="margin-top:20px;">Permissions Detected</div>
       <div class="perm-list" id="perm-list"></div>
+
+      <!-- Export Results -->
+      <div class="export-section">
+        <button class="export-btn json" onclick="exportJSON()">
+          <span>📋</span> Export JSON
+        </button>
+        <button class="export-btn pdf" onclick="exportReport()">
+          <span>📄</span> Download Report
+        </button>
+      </div>
 
       <!-- Scan again -->
       <button id="scan-again" onclick="resetAll()">↺ Analyze Another APK</button>
@@ -1879,7 +2217,37 @@ function clearFile(e) {
   document.getElementById('progress-section').style.display = 'none';
 }
 
+// ── Terminal Log Functions ───────────────────────
+let scanLogs = [];
+
+function getTimestamp() {
+  const now = new Date();
+  return `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+}
+
+function addLogEntry(msg, type = 'normal') {
+  const logContainer = document.getElementById('terminal-log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const typeClass = type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'error' ? 'error' : '';
+  entry.innerHTML = `
+    <span class="log-time">${getTimestamp()}</span>
+    <span class="log-msg ${typeClass}">${msg}</span>
+  `;
+  logContainer.appendChild(entry);
+  logContainer.scrollTop = logContainer.scrollHeight;
+  scanLogs.push({ time: getTimestamp(), msg, type });
+}
+
+function clearTerminalLog() {
+  const logContainer = document.getElementById('terminal-log');
+  logContainer.innerHTML = '';
+  scanLogs = [];
+}
+
 // ── Scan ──────────────────────────────────────────
+let lastScanData = null; // Store for export
+
 async function startScan() {
   if (!selectedFile) return;
 
@@ -1888,27 +2256,37 @@ async function startScan() {
   document.getElementById('result-section').style.display   = 'none';
   document.getElementById('progress-section').style.display = 'block';
 
-  const steps = ['step-upload','step-parse','step-extract','step-predict','step-shap'];
-  const labels = ['Uploading...','Parsing APK...','Extracting features...','Running model...','Computing SHAP...'];
-  const pcts   = [15, 35, 60, 80, 95];
+  // Clear and init terminal log
+  clearTerminalLog();
+  addLogEntry('Initializing security scan sequence...', 'normal');
+  await new Promise(r => setTimeout(r, 300));
 
-  // Animate steps
-  let stepIndex = 0;
+  const steps = [
+    { id: 'step-upload', label: 'Uploading APK to server...', pct: 15, log: 'Establishing secure connection to analysis server...' },
+    { id: 'step-parse', label: 'Parsing APK manifest...', pct: 35, log: 'Parsing AndroidManifest.xml and resources...' },
+    { id: 'step-extract', label: 'Extracting features...', pct: 60, log: 'Extracting 241 static features (permissions, API calls, intents)...' },
+    { id: 'step-predict', label: 'Running ML model...', pct: 80, log: 'Running XGBoost classifier inference...' },
+    { id: 'step-shap', label: 'Computing SHAP...', pct: 95, log: 'Computing SHAP values for feature attribution...' }
+  ];
+
+  // Animate steps with terminal logs
   function activateStep(i) {
-    if (i > 0) {
-      document.getElementById(steps[i-1]).className = 'step-row done';
-    }
     if (i < steps.length) {
-      document.getElementById(steps[i]).className = 'step-row active';
-      document.getElementById('progress-step-label').textContent = labels[i];
-      document.getElementById('progress-pct').textContent = pcts[i] + '%';
-      document.getElementById('progress-fill').style.width = pcts[i] + '%';
+      document.getElementById('progress-step-label').textContent = steps[i].label;
+      document.getElementById('progress-pct').textContent = steps[i].pct + '%';
+      document.getElementById('progress-fill').style.width = steps[i].pct + '%';
+      addLogEntry(steps[i].log, 'normal');
     }
   }
 
   activateStep(0);
-  // Simulate intermediate steps visually
-  const delays = [0, 600, 1200, 1800, 2200];
+
+  // Start androguard developer console logs
+  if (!devConsoleOpen) toggleDevConsole();
+  simulateAndroguardLogs();
+
+  // Simulate intermediate steps visually with terminal logs
+  const delays = [400, 1000, 1600, 2200, 2800];
   delays.forEach((d, i) => {
     if (i > 0) setTimeout(() => activateStep(i), d);
   });
@@ -1918,16 +2296,24 @@ async function startScan() {
   fd.append('apk', selectedFile);
 
   try {
+    addLogEntry('Uploading APK payload (' + (selectedFile.size/1024/1024).toFixed(2) + ' MB)...', 'normal');
     const res = await fetch('/scan', { method: 'POST', body: fd });
     const data = await res.json();
 
     // Complete all steps
-    steps.forEach(s => document.getElementById(s).className = 'step-row done');
     document.getElementById('progress-pct').textContent = '100%';
     document.getElementById('progress-fill').style.width = '100%';
-    document.getElementById('progress-step-label').textContent = 'Complete';
+    document.getElementById('progress-step-label').textContent = 'Analysis complete';
 
-    await new Promise(r => setTimeout(r, 400));
+    if (data.success) {
+      addLogEntry(`Analysis complete. Verdict: ${data.verdict}`, data.verdict === 'MALICIOUS' ? 'warning' : 'success');
+      addLogEntry(`Confidence: ${data.confidence}% | Risk Level: ${data.risk_level}`, 'success');
+      lastScanData = data; // Store for export
+    } else {
+      addLogEntry('Analysis failed: ' + data.error, 'error');
+    }
+
+    await new Promise(r => setTimeout(r, 600));
     document.getElementById('progress-section').style.display = 'none';
     document.getElementById('scan-btn').disabled = false;
 
@@ -1939,15 +2325,127 @@ async function startScan() {
     renderResult(data);
 
   } catch(err) {
+    addLogEntry('Server connection failed. Is Flask running?', 'error');
     showToast('Server error — is Flask running?', true);
     document.getElementById('progress-section').style.display = 'none';
     document.getElementById('scan-btn').disabled = false;
   }
 }
 
+// ── Copy to Clipboard ────────────────────────────
+function copyToClipboard(text, btnElement) {
+  navigator.clipboard.writeText(text).then(() => {
+    btnElement.textContent = '✓ Copied';
+    btnElement.classList.add('copied');
+    showToast('Copied to clipboard');
+    setTimeout(() => {
+      btnElement.textContent = '📋 Copy';
+      btnElement.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    showToast('Failed to copy', true);
+  });
+}
+
+// ── Export Functions ─────────────────────────────
+function exportJSON() {
+  if (!lastScanData) {
+    showToast('No scan data available', true);
+    return;
+  }
+  const dataStr = JSON.stringify(lastScanData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bankshield-scan-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('JSON report downloaded');
+}
+
+function exportReport() {
+  if (!lastScanData) {
+    showToast('No scan data available', true);
+    return;
+  }
+
+  const d = lastScanData;
+  const meta = d.meta || {};
+  const timestamp = new Date().toLocaleString();
+
+  let report = `
+========================================
+BANKSHIELD SECURITY SCAN REPORT
+========================================
+Generated: ${timestamp}
+Analysis ID: ${Date.now().toString(36).toUpperCase()}
+
+--- VERDICT ---
+Status: ${d.verdict}
+Confidence: ${d.confidence}%
+Risk Level: ${d.risk_level}
+
+--- APK METADATA ---
+App Name: ${meta.app_name || 'N/A'}
+Package: ${meta.package_name || 'N/A'}
+File Size: ${meta.file_size_kb || '?'} KB
+MD5 Hash: ${meta.md5 || 'N/A'}
+Permissions: ${meta.num_permissions || '0'}
+Features Analyzed: ${d.features_analyzed}
+Features Detected: ${d.active_features}
+
+--- TOP DETECTION SIGNALS ---
+`;
+
+  if (d.top_reasons && d.top_reasons.length) {
+    d.top_reasons.forEach((r, i) => {
+      report += `${i+1}. ${r.feature} (${r.value ? 'DETECTED' : 'ABSENT'}) - Impact: ${(r.impact * 100).toFixed(1)}%\n`;
+    });
+  }
+
+  report += `
+--- PERMISSIONS DETECTED ---
+`;
+  const perms = meta.permissions || [];
+  if (perms.length) {
+    perms.forEach(p => {
+      const short = p.split('.').pop();
+      report += `- ${short}\n`;
+    });
+  } else {
+    report += 'No permissions detected\n';
+  }
+
+  report += `
+--- TECHNICAL INFO ---
+Model: XGBoost Classifier
+Dataset: TUANDROMD (4,465 samples)
+Features: 241 static features
+
+Report generated by BankShield APK Scanner
+https://huggingface.co/spaces/shubmrj/bankshield
+========================================
+`;
+
+  const blob = new Blob([report], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bankshield-report-${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Scan report downloaded');
+}
+
 // ── Render result ─────────────────────────────────
 function renderResult(d) {
   document.getElementById('result-section').style.display = 'block';
+  lastScanData = d; // Store for export
 
   const bad = d.verdict === 'MALICIOUS';
 
@@ -1960,8 +2458,10 @@ function renderResult(d) {
     ? 'This APK exhibits characteristics of a fake banking application'
     : 'This APK appears to be a genuine banking application';
 
-  // Confidence
-  document.getElementById('conf-val').textContent = d.confidence + '%';
+  // Confidence with animation
+  const confVal = document.getElementById('conf-val');
+  confVal.textContent = d.confidence + '%';
+  confVal.classList.add('animate-count');
   const fill = document.getElementById('conf-fill');
   fill.style.background = bad
     ? `linear-gradient(90deg, ${d.risk_color}, #ff6b9d)`
@@ -1972,20 +2472,27 @@ function renderResult(d) {
   const badgeWrap = document.getElementById('risk-badge-wrap');
   badgeWrap.innerHTML = `<span class="risk-badge risk-${d.risk_level}">● ${d.risk_level} RISK</span>`;
 
-  // Metadata
+  // Metadata with copy buttons
   const meta = d.meta || {};
   const metaGrid = document.getElementById('meta-grid');
   const metaItems = [
-    ['App Name',    meta.app_name    || '?'],
-    ['Package',     meta.package_name|| '?'],
-    ['File Size',   (meta.file_size_kb || '?') + ' KB'],
-    ['Permissions', meta.num_permissions || '?'],
-    ['MD5',         (meta.md5 || '?').substring(0,16) + '…'],
-    ['Features Hit', `${d.active_features} / ${d.features_analyzed}`],
+    ['App Name',    meta.app_name    || '?', null],
+    ['Package',     meta.package_name|| '?', meta.package_name],
+    ['File Size',   (meta.file_size_kb || '?') + ' KB', null],
+    ['Permissions', meta.num_permissions || '?', null],
+    ['MD5',         (meta.md5 || '?').substring(0,16) + '…', meta.md5],
+    ['Features Hit', `${d.active_features} / ${d.features_analyzed}`, null],
   ];
-  metaGrid.innerHTML = metaItems.map(([k,v]) =>
-    `<div class="meta-item"><div class="meta-key">${k}</div><div class="meta-val">${v}</div></div>`
-  ).join('');
+  metaGrid.innerHTML = metaItems.map(([k,v,copyVal], idx) => {
+    const copyBtn = copyVal ? `<button class="copy-btn" onclick="copyToClipboard('${copyVal}', this)">📋 Copy</button>` : '';
+    return `<div class="meta-item">
+      <div class="meta-key">${k}</div>
+      <div class="meta-val-wrapper">
+        <div class="meta-val">${v}</div>
+        ${copyBtn}
+      </div>
+    </div>`;
+  }).join('');
 
   // SHAP reasons
   const reasonsList = document.getElementById('reasons-list');
@@ -2091,6 +2598,124 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// ── Developer Console Functions ───────────────────
+let devConsoleOpen = false;
+let devConsoleLogs = [];
+
+function toggleDevConsole() {
+  const panel = document.getElementById('devConsolePanel');
+  const toggle = document.getElementById('devConsoleToggle');
+  devConsoleOpen = !devConsoleOpen;
+
+  if (devConsoleOpen) {
+    panel.classList.add('active');
+    toggle.classList.add('active');
+  } else {
+    panel.classList.remove('active');
+    toggle.classList.remove('active');
+  }
+}
+
+function addDevConsoleLog(timestamp, level, module, functionName, lineNum, message) {
+  const body = document.getElementById('devConsoleBody');
+  const line = document.createElement('div');
+  line.className = 'console-line';
+  line.innerHTML = `
+    <span class="console-timestamp">${timestamp}</span>
+    <span class="console-level ${level}">${level}</span>
+    <span class="console-content">
+      <span class="console-module">${module}:</span><span class="console-func">${functionName}</span><span class="console-line-num">:${lineNum}</span>
+      <span class="console-sep"> - </span>
+      <span class="console-msg">${message}</span>
+    </span>
+  `;
+
+  // Insert before the prompt
+  const prompt = body.querySelector('.console-prompt');
+  if (prompt) {
+    body.insertBefore(line, prompt);
+  } else {
+    body.appendChild(line);
+  }
+
+  // Auto-scroll to bottom
+  body.scrollTop = body.scrollHeight;
+
+  devConsoleLogs.push({ timestamp, level, module, functionName, lineNum, message });
+}
+
+function clearDevConsole() {
+  const body = document.getElementById('devConsoleBody');
+  body.innerHTML = `
+    <div class="console-prompt">
+      <span>$</span>
+      <span>androguard awaiting input...</span>
+      <span class="console-cursor"></span>
+    </div>
+  `;
+  devConsoleLogs = [];
+}
+
+function setDevConsoleStatus(active) {
+  const status = document.getElementById('devConsoleStatus');
+  if (active) {
+    status.classList.add('active');
+  } else {
+    status.classList.remove('active');
+  }
+}
+
+// Simulate androguard analysis logs during scan
+function simulateAndroguardLogs() {
+  const logs = [
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '501', msg: 'Parsing exceptions' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '508', msg: 'Creating basic blocks' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '536', msg: 'Settings basic blocks childs' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '543', msg: 'Creating exceptions' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: '__init__', line: '382', msg: 'Adding new method Landroidx/core/transition/TransitionKt$doOnEnd$inlined$addListener$default$1; onTransitionResume' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '490', msg: 'Parsing instructions for method at @0x001f3838' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '501', msg: 'Parsing exceptions' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '508', msg: 'Creating basic blocks' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '536', msg: 'Settings basic blocks childs' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'create_basic_block', line: '543', msg: 'Creating exceptions' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: '__init__', line: '382', msg: 'Adding new method Landroidx/core/transition/TransitionKt$doOnEnd$inlined$addListener$default$1; onTransitionStart' },
+    { level: 'INFO', module: 'androguard.core.bytecodes.apk', func: 'parse_apk', line: '245', msg: 'Parsing APK manifest...' },
+    { level: 'INFO', module: 'androguard.core.bytecodes.apk', func: 'get_permissions', line: '312', msg: 'Found 24 permissions' },
+    { level: 'INFO', module: 'androguard.core.bytecodes.dvm', func: 'get_strings', line: '188', msg: 'Extracting string constants...' },
+    { level: 'DEBUG', module: 'androguard.core.analysis.analysis', func: 'analyze', line: '420', msg: 'Building call graph...' },
+    { level: 'INFO', module: 'apk_extractor', func: 'extract_features', line: '156', msg: 'Feature extraction complete - 241 features extracted' },
+    { level: 'DEBUG', module: 'sklearn.preprocessing', func: 'transform', line: '890', msg: 'Scaling feature vector...' },
+    { level: 'INFO', module: 'xgboost.core', func: 'predict', line: '445', msg: 'Running inference on 50 top features' },
+    { level: 'DEBUG', module: 'shap.explainers', func: '__call__', line: '234', msg: 'Computing SHAP values...' },
+    { level: 'INFO', module: 'app', func: 'scan', line: '178', msg: 'Analysis pipeline complete' }
+  ];
+
+  let index = 0;
+  setDevConsoleStatus(true);
+
+  function addNextLog() {
+    if (index >= logs.length) {
+      setDevConsoleStatus(false);
+      return;
+    }
+
+    const log = logs[index];
+    const now = new Date();
+    const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+
+    addDevConsoleLog(ts, log.level, log.module, log.func, log.line, log.msg);
+    index++;
+
+    // Random delay between 50-200ms for realistic feel
+    const delay = Math.random() * 150 + 50;
+    setTimeout(addNextLog, delay);
+  }
+
+  // Clear previous logs and start
+  clearDevConsole();
+  addNextLog();
+}
 </script>
 
 <!-- INFO MODAL -->
@@ -2314,6 +2939,29 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="modal-stack-item"><span class="modal-stack-icon"></span>Docker</div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Developer Console Toggle -->
+<button class="dev-console-toggle" id="devConsoleToggle" onclick="toggleDevConsole()">
+  <span>🖥️</span> Developer Console
+</button>
+
+<!-- Developer Console Panel -->
+<div class="dev-console-panel" id="devConsolePanel">
+  <div class="dev-console-header">
+    <div class="dev-console-title">
+      <span class="dev-console-status" id="devConsoleStatus"></span>
+      androguard.analysis
+    </div>
+    <button class="dev-console-close" onclick="toggleDevConsole()">✕</button>
+  </div>
+  <div class="dev-console-body" id="devConsoleBody">
+    <div class="console-prompt">
+      <span>$</span>
+      <span>androguard awaiting input...</span>
+      <span class="console-cursor"></span>
     </div>
   </div>
 </div>
