@@ -133,6 +133,8 @@ def scan_apk():
         top_reasons = []
         try:
             model_type = type(model).__name__
+            print(f"DEBUG: Model type = {model_type}")
+            print(f"DEBUG: Model module = {type(model).__module__}")
             if model_type in ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 'RandomForestClassifier']:
                 exp = shap.TreeExplainer(model)
                 sv = exp.shap_values(row)[0]
@@ -144,8 +146,13 @@ def scan_apk():
                         'direction': 'suspicious' if impact[feat] > 0 else 'safe',
                         'impact': round(float(impact[feat]), 4)
                     })
+                print(f"DEBUG: SHAP success - {len(top_reasons)} reasons")
+            else:
+                print(f"DEBUG: Model type {model_type} not in supported list")
         except Exception as se:
-            print(f"SHAP skipped: {se}")
+            print(f"DEBUG: SHAP error: {se}")
+            import traceback
+            traceback.print_exc()
 
         if confidence >= 0.85:
             risk_level, risk_color = 'CRITICAL', '#ff2d55'
