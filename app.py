@@ -135,7 +135,10 @@ def scan_apk():
             model_type = type(model).__name__
             print(f"DEBUG: Model type = {model_type}")
             print(f"DEBUG: Model module = {type(model).__module__}")
-            if model_type in ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 'RandomForestClassifier']:
+            # Check for tree-based models (including Pipeline wrappers)
+            supported_types = ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 
+                              'RandomForestClassifier', 'Pipeline', 'GridSearchCV', 'RandomizedSearchCV']
+            if model_type in supported_types or hasattr(model, 'predict_proba'):
                 exp = shap.TreeExplainer(model)
                 sv = exp.shap_values(row)[0]
                 impact = pd.Series(sv, index=top_features)
