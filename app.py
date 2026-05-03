@@ -139,29 +139,76 @@ def scan_apk():
             supported_types = ['XGBClassifier', 'Booster', 'LGBMClassifier', 'CatBoostClassifier', 
                               'RandomForestClassifier', 'Pipeline', 'GridSearchCV', 'RandomizedSearchCV']
             if model_type in supported_types or hasattr(model, 'predict_proba'):
-                # Fix XGBoost base_score string bug (version mismatch)
-                if hasattr(model, 'base_score') and model.base_score is not None:
+                # Fix XGBoost base_score string bug (version mismatch between save/load environments)
+                if model_type == 'XGBClassifier':
                     try:
-                        float(model.base_score)
-                    except (ValueError, TypeError):
-                        # base_score is a malformed string, reset to default
-                        print(f"DEBUG: Fixing base_score from {model.base_score} to 0.5")
-                        model.base_score = 0.5
-                exp = shap.TreeExplainer(model)
-                sv = exp.shap_values(row)[0]
-                impact = pd.Series(sv, index=top_features)
-                for feat in impact.abs().nlargest(5).index:
-                    top_reasons.append({
-                        'feature': feat,
-                        'value': int(row[feat].values[0]),
-                        'direction': 'suspicious' if impact[feat] > 0 else 'safe',
-                        'impact': round(float(impact[feat]), 4)
-                    })
-                print(f"DEBUG: SHAP success - {len(top_reasons)} reasons")
+                        booster = model.get_booster()
+                        # Fix the internal learner_model_param base_score if it's a malformed string
+                        if hasattr(booster, 'save_config'):
+                            import json
+                            config = json.loads(booster.save_config())
+                            learner = config.get('learner', {})
+                            learner_param = learner.get('learner_model_param', {})
+                            if 'base_score' in learner_param:
+                                try:
+                                    float(learner_param['base_score'])
+                                except (ValueError, TypeError):
+                                    print(f"DEBUG: Fixing learner_param base_score from {learner_param['base_score']} to 0.5")
+                                    learner_param['base_score'] = '0.5'
+                                    # Save fixed config back
+                                    booster.load_config(json.dumps(config))
+                                    booster.set_param({'base_score': 0.5})
+                        # Also fix attributes
+                        attr = booster.attributes()
+                        if 'base_score' in attr:
+                            try:
+                                float(attr['base_score'])
+                            except (ValueError, TypeError):
+                                print(f"DEBUG: Fixing attr base_score from {attr['base_score']} to 0.5")
+                                booster.set_attr(base_score='0.5')
+                                booster.set_param({'base_score': 0.5})
+                    except Exception as e:
+                        print(f"DEBUG: Could not fix base_score: {e}")
+                try:
+                    exp = shap.TreeExplainer(model)
+                    sv = exp.shap_values(row)[0]
+                    impact = pd.Series(sv, index=top_features)
+                    for feat in impact.abs().nlargest(5).index:
+                        top_reasons.append({
+                            'feature': feat,
+                            'value': int(row[feat].values[0]),
+                            'direction': 'suspicious' if impact[feat] > 0 else 'safe',
+                            'impact': round(float(impact[feat]), 4)
+                        })
+                    print(f"DEBUG: SHAP TreeExplainer success - {len(top_reasons)} reasons")
+                except Exception as tree_err:
+                    # TreeExplainer failed, try fallback to XGBoost built-in importance
+                    print(f"DEBUG: TreeExplainer failed: {tree_err}")
+                    print(f"DEBUG: Falling back to XGBoost feature importance")
+                    try:
+                        importance = model.get_booster().get_score(importance_type='gain')
+                        # Convert feature importance to top_reasons format
+                        sorted_imp = sorted(importance.items(), key=lambda x: x[1], reverse=True)[:5]
+                        for feat_name, imp_score in sorted_imp:
+                            # Map f0, f1, f2... back to actual feature names
+                            if feat_name.startswith('f'):
+                                idx = int(feat_name[1:])
+                                if idx < len(top_features):
+                                    actual_feat = top_features[idx]
+                                    feat_val = int(row[actual_feat].values[0])
+                                    top_reasons.append({
+                                        'feature': actual_feat,
+                                        'value': feat_val,
+                                        'direction': 'suspicious' if feat_val == 1 else 'safe',
+                                        'impact': round(float(imp_score) / 1000, 4)  # Scale down for display
+                                    })
+                        print(f"DEBUG: XGBoost importance fallback success - {len(top_reasons)} reasons")
+                    except Exception as imp_err:
+                        print(f"DEBUG: Importance fallback also failed: {imp_err}")
             else:
                 print(f"DEBUG: Model type {model_type} not in supported list")
         except Exception as se:
-            print(f"DEBUG: SHAP error: {se}")
+            print(f"DEBUG: SHAP outer error: {se}")
             import traceback
             traceback.print_exc()
 
